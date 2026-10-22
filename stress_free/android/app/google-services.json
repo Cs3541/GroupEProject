@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "170079261914",
+    "project_id": "stressfree-40791",
+    "storage_bucket": "stressfree-40791.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:170079261914:android:cee009f926d501ae7641e3",
+        "android_client_info": {
+          "package_name": "com.example.stress_free"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXNGQ7QiPwA0u2NU-J__XnW3tITN1Velg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
