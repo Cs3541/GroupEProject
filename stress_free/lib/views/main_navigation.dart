@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:stress_free/views/alarm_settings_screen.dart';
+import 'package:stress_free/views/main_alarm_screen.dart';
+import 'package:stress_free/views/settings_screen.dart';
 import 'homescreen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -13,6 +16,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   final List<Widget> _screens = [
     const HomePage(),
+    const MainAlarmScreen(),
+    const SettingsScreen(),
     ];
 
   void _onItemTapped(int index) {
@@ -34,6 +39,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.alarm),
+            label: 'Alarms',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
