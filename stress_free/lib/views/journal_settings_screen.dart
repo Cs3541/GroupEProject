@@ -47,9 +47,11 @@ class _JournalSettingsScreenState extends State<JournalSettingsScreen> {
                 );
               }).toList(),
               onChanged: (value) {
-                setState(() {
-                  selectedFont = value!;
-                });
+                if (value != null) {
+                  setState(() {
+                    selectedFont = value;
+                  });
+                }
               },
             ),
 
@@ -57,7 +59,37 @@ class _JournalSettingsScreenState extends State<JournalSettingsScreen> {
 
             ElevatedButton(
               onPressed: () {
-                // Still have to clear journal entries once journal storage is added.
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Clear All Journals?'),
+                    content: const Text(
+                      'Are you sure you want to delete all journal entries? '
+                      'This action cannot be undone.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Cancel'),
+                      ),
+
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+
+                          // TODO: Connect to Mai's journal storage
+                          // to delete all saved journal entries.
+                        },
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
               child: const Text('Clear All Journals'),
             ),
