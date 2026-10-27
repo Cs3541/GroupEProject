@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:stress_free/journal/journal_screen.dart';
+import 'package:stress_free/views/journal_screen.dart';
 import 'package:stress_free/views/journal_settings_screen.dart';
 import 'package:stress_free/views/main_alarm_screen.dart';
 import 'package:stress_free/views/settings_screen.dart';
