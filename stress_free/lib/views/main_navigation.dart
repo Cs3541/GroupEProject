@@ -18,9 +18,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const HomePage(),
     const MainAlarmScreen(),
-    const SettingsScreen(),
     const JournalScreen(),
-    const JournalSettingsScreen(),
+    const SettingsScreen(),
     ];
 
   void _onItemTapped(int index) {
