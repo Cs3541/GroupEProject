@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stress_free/views/main_navigation.dart';
 import 'views/homescreen.dart';
 
 void main() {
@@ -15,7 +16,7 @@ class StressFreeApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomePage(title: 'Stress Free'),
+      home: const MainNavigationScreen(),
     );
   }
 }
