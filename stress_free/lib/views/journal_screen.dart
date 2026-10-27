@@ -20,7 +20,7 @@ String? validatedDate(String value) {
 
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
-  /// supply a callback to open his future settings screen.
+  /// supply a callback to open settings screen.
   const JournalScreen({super.key, this.onOpenSettings});
 
   final VoidCallback? onOpenSettings;
