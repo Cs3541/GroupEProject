@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../journal/journal_store.dart';
 
 class JournalSettingsScreen extends StatefulWidget {
   const JournalSettingsScreen({super.key});
@@ -78,9 +79,7 @@ class _JournalSettingsScreenState extends State<JournalSettingsScreen> {
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
-
-                          // TODO: Connect to Mai's journal storage
-                          // to delete all saved journal entries.
+                          await JournalStore().clearAll();
                         },
                         child: const Text(
                           'Delete',
