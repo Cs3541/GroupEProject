@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:stress_free/views/alarm_settings_screen.dart';
+import 'package:stress_free/journal/journal_screen.dart';
+import 'package:stress_free/views/journal_settings_screen.dart';
 import 'package:stress_free/views/main_alarm_screen.dart';
 import 'package:stress_free/views/settings_screen.dart';
 import 'homescreen.dart';
@@ -18,6 +19,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const HomePage(),
     const MainAlarmScreen(),
     const SettingsScreen(),
+    const JournalScreen(),
+    const JournalSettingsScreen(),
     ];
 
   void _onItemTapped(int index) {
@@ -45,9 +48,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: 'Alarms',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.article_outlined),
+            label: 'Journals',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
-          )
+          ),
         ],
       ),
     );

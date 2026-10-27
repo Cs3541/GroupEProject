@@ -77,7 +77,7 @@ class _JournalSettingsScreenState extends State<JournalSettingsScreen> {
                       ),
 
                       TextButton(
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.pop(context);
                           await JournalStore().clearAll();
                         },
