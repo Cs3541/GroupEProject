@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stress_free/views/main_navigation.dart';
-
+import 'views/homescreen.dart';
+import 'views/settings_screen.dart';
+import 'views/journal_screen.dart';
 
 void main() {
   runApp(const StressFreeApp());
