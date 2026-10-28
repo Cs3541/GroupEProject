@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stress_free/views/journal_screen.dart';
 import 'package:stress_free/views/main_alarm_screen.dart';
+import 'package:stress_free/views/main_affirmation_screen.dart';
 import 'package:stress_free/views/settings_screen.dart';
 import 'homescreen.dart';
 
@@ -18,6 +19,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const HomePage(),
     const MainAlarmScreen(),
     const JournalScreen(),
+    const MainAffirmationScreen(),
     const SettingsScreen(),
     ];
 
@@ -48,6 +50,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.article_outlined),
             label: 'Journals',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.check_circle),
+            label: 'Affirmations',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
