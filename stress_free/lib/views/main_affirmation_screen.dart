@@ -1,30 +1,47 @@
 import 'package:flutter/material.dart';
 
-class MainAffirmationScreen extends StatefulWidget {
-  const MainAffirmationScreen({super.key});
+import '../presenters/affirmations_presenter.dart';
+
+class MainAffirmationScreen extends StatelessWidget {
+  const MainAffirmationScreen({super.key, this.presenter});
+
+  final AffirmationsPresenter? presenter;
+
   @override
-  State<MainAffirmationScreen> createState() => _MainAffirmationScreenState();
-  
-}
-
-class _MainAffirmationScreenState extends State<MainAffirmationScreen> {
-
-final List<String> entries = <String>['A', 'B', 'C'];
-final List<int> colorCodes = <int>[600, 500, 100];
-
-@override
-Widget build(BuildContext context) {
-  return ListView.builder(
-    padding: const EdgeInsets.all(8),
-    itemCount: entries.length,
-    itemBuilder: (BuildContext context, int index) {
-      return Container(
-        height: 50,
-        color: Colors.amber[colorCodes[index]],
-        child: Center(child: Text('Entry ${entries[index]}')),
-      );
-    }
-  );
-}
- 
+  Widget build(BuildContext context) {
+    final categories = (presenter ?? AffirmationsPresenter()).categories;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Affirmations'),
+        actions: [
+          // Navigation belongs to later stories.
+          IconButton(
+            tooltip: 'Favorite affirmations',
+            onPressed: () {},
+            icon: const Icon(Icons.favorite_border),
+          ),
+          IconButton(
+            tooltip: 'Affirmation settings',
+            onPressed: () {},
+            icon: const Icon(Icons.settings),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text(
+            'Choose a category',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16),
+          for (final category in categories)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ElevatedButton(onPressed: () {}, child: Text(category)),
+            ),
+        ],
+      ),
+    );
+  }
 }
