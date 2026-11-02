@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../presenters/affirmation_presenter.dart';
+import '../models/affirmation_model.dart';
 
 class MainAffirmationScreen extends StatefulWidget {
   const MainAffirmationScreen({super.key});
@@ -8,20 +10,38 @@ class MainAffirmationScreen extends StatefulWidget {
 }
 
 class _MainAffirmationScreenState extends State<MainAffirmationScreen> {
+  final AffirmationPresenter _presenter = AffirmationPresenter();
+  List<Affirmation> _affirmations = [];
+  bool _isLoading = true;
 
-final List<String> entries = <String>['A', 'B', 'C'];
-final List<int> colorCodes = <int>[600, 500, 100];
+// Load affirmations when the screen is initialized
+  @override
+  void initState() {
+    super.initState();
+    _loadAffirmations();
+  }
+    Future<void> _loadAffirmations() async {
+    final affirmations = await _presenter.loadAffirmations();
+      setState(() {
+        _affirmations = affirmations;
+        _isLoading = false;
+      });
+  }
 
+// Screen build method
 @override
 Widget build(BuildContext context) {
+  if (_isLoading) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
   return ListView.builder(
     padding: const EdgeInsets.all(8),
-    itemCount: entries.length,
+    itemCount: _affirmations.length,
     itemBuilder: (BuildContext context, int index) {
-      return Container(
+      return SizedBox(
         height: 50,
-        color: Colors.amber[colorCodes[index]],
-        child: Center(child: Text('Entry ${entries[index]}')),
+        child: Center(child: Text('Entry ${_affirmations[index].text}')),
       );
     }
   );
