@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'journal_store.dart';
+import '../models/journal_store.dart';
 
 class JournalSettingsScreen extends StatefulWidget {
   const JournalSettingsScreen({super.key});
