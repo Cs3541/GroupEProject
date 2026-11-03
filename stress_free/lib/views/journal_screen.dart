@@ -238,19 +238,17 @@ class _JournalScreenState extends State<JournalScreen> {
                                 fontFamily: _settings.font.family,
                               ),
                             ),
-                            trailing: const Icon(Icons.chevron_right),
+                            trailing: IconButton(
+                              tooltip: 'Delete entry for $date',
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                              onPressed: () => _confirmDeleteEntry(date),
+                            ),
                             onTap: () => _openEditor(date),
                           ),
                         ),
-                        trailing: IconButton(
-                          tooltip: 'Delete entry for $date',
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            color: Colors.red,
-                          ),
-                          onPressed: () => _confirmDeleteEntry(date),
-                        ),
-                        onTap: () => _openEditor(date),
                       ),
                 const SizedBox(height: 24),
                 Text(
