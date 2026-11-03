@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
 import '../presenters/alarm_presenter.dart';
 import 'alarm_settings_screen.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
 
 class MainAlarmScreen extends StatefulWidget {
   const MainAlarmScreen({super.key, this.presenter});
@@ -14,11 +15,26 @@ class MainAlarmScreen extends StatefulWidget {
 
 class _MainAlarmScreenState extends State<MainAlarmScreen> {
   late final AlarmPresenter _alarmPresenter;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  late final Timer _timer;
 
   @override
   void initState() {
     super.initState();
     _alarmPresenter = widget.presenter ?? AlarmPresenter();
+    _audioPlayer.setReleaseMode(ReleaseMode.loop); // Alarm loops 
+    _timer = Timer.periodic(const Duration(seconds: 1), _checkAlarmTime);
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _timer.cancel();
+    super.dispose(); 
+  }
+
+  void _checkAlarmTime(Timer timer) {
+    print(DateTime.now());
   }
 
   @override
@@ -61,7 +77,10 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
             else
               const Text('Alarm Off', style: TextStyle(fontSize: 60)),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                // testing if the alarm sound works
+                await _audioPlayer.stop();
+              },
               child: const Text('Stop Alarm', style: TextStyle(fontSize: 20)),
             ),
           ],
