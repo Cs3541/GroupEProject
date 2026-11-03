@@ -1,57 +1,91 @@
 import 'package:flutter/material.dart';
+import '../presenters/alarm_presenter.dart';
 import 'alarm_settings_screen.dart';
-import '../presenters/alarm_presenter.dart'; 
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
 
 class MainAlarmScreen extends StatefulWidget {
-  const MainAlarmScreen({super.key});
+  const MainAlarmScreen({super.key, this.presenter});
+
+  final AlarmPresenter? presenter;
 
   @override
   State<MainAlarmScreen> createState() => _MainAlarmScreenState();
-
 }
 
 class _MainAlarmScreenState extends State<MainAlarmScreen> {
-  final AlarmPresenter _alarmPresenter = AlarmPresenter(); 
+  late final AlarmPresenter _alarmPresenter;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  late final Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _alarmPresenter = widget.presenter ?? AlarmPresenter();
+    _audioPlayer.setReleaseMode(ReleaseMode.loop); // Alarm loops 
+    _timer = Timer.periodic(const Duration(seconds: 1), _checkAlarmTime);
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _timer.cancel();
+    super.dispose(); 
+  }
+
+  void _checkAlarmTime(Timer timer) {
+    print(DateTime.now());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bedtime Alarm', style: TextStyle(fontSize: 22)),
+        title: const Text('Bedtime Alarm', style: TextStyle(fontSize: 22)),
         actions: [
           IconButton(
+            tooltip: 'Alarm settings',
             onPressed: () async {
-              await Navigator.push(
+              await Navigator.push<void>(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => AlarmSettingsScreen(
-                    alarmPresenter: _alarmPresenter,))
+                  builder: (_) =>
+                      AlarmSettingsScreen(alarmPresenter: _alarmPresenter),
+                ),
               );
+              if (!mounted) return;
               setState(() {});
-            },    
-            icon: Icon(Icons.settings)
-          )
-        ] 
+            },
+            icon: const Icon(Icons.settings),
+          ),
+        ],
       ),
-      body:
-      Center(
-        child: 
-        Column(
+      body: Center(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (_alarmPresenter.alarmOn) ...[
-              Text(_alarmPresenter.alarmName, style: TextStyle(fontSize: 20) ),
-              Text(_alarmPresenter.alarmTime.format(context),  style: TextStyle(fontSize: 60)),
-            ] else 
-              Text("Alarm Off", style: TextStyle(fontSize: 60)),
+            Text(
+              _alarmPresenter.alarmName,
+              style: const TextStyle(fontSize: 20),
+            ),
+            if (_alarmPresenter.alarmOn)
+              Text(
+                _alarmPresenter.alarmTime.format(context),
+                style: const TextStyle(fontSize: 60),
+              )
+            else
+              const Text('Alarm Off', style: TextStyle(fontSize: 60)),
             ElevatedButton(
-              onPressed: () {},
-              child: Text('Stop Alarm', style: TextStyle(fontSize: 20))
-            )  
-          ]
-        ),   
-      )       
+              onPressed: () async {
+                // testing if the alarm sound works
+                await _audioPlayer.stop();
+              },
+              child: const Text('Stop Alarm', style: TextStyle(fontSize: 20)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
