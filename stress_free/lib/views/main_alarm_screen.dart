@@ -17,6 +17,8 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   late final AlarmPresenter _alarmPresenter;
   final AudioPlayer _audioPlayer = AudioPlayer();
   late final Timer _timer;
+  bool _alarmStopped = false;
+  bool _isRinging = false; 
 
   @override
   void initState() {
@@ -34,7 +36,17 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   }
 
   void _checkAlarmTime(Timer timer) {
-    print(DateTime.now());
+    DateTime currentTime = DateTime.now();
+    if (currentTime.hour != _alarmPresenter.alarmTime.hour ||
+        currentTime.minute != _alarmPresenter.alarmTime.minute) {
+      _alarmStopped = false;
+      _isRinging = false;
+    } else if (_alarmPresenter.alarmOn &&
+        !_alarmStopped &&
+        !_isRinging) {
+      _audioPlayer.play(AssetSource('audio/alarm.wav'));
+      _isRinging = true;
+    }
   }
 
   @override
@@ -78,8 +90,9 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
               const Text('Alarm Off', style: TextStyle(fontSize: 60)),
             ElevatedButton(
               onPressed: () async {
-                // testing if the alarm sound works
-                await _audioPlayer.stop();
+                await _audioPlayer.stop(); // Stop the alarm
+                _alarmStopped = true; // The alarm should be stopped
+                _isRinging = false;  // The alarm shouldn't ring
               },
               child: const Text('Stop Alarm', style: TextStyle(fontSize: 20)),
             ),
