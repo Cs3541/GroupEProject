@@ -46,6 +46,7 @@ class MainAffirmationScreen extends StatelessWidget {
       ),
     );
   }
+}
 class _MainAffirmationScreenState extends State<MainAffirmationScreen> {
   final AffirmationPresenter _presenter = AffirmationPresenter();
   List<Affirmation> _affirmations = [];
@@ -131,5 +132,5 @@ Widget build(BuildContext context) {
     ),
   );
 }
- 
 }
+
