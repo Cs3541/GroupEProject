@@ -30,4 +30,12 @@ class JournalStore {
   Future<void> clearAll() async {
     await _prefs.remove(storageKey);
   }
+  Future<void> deleteEntry(String date) async {
+  final entries = await loadAll();
+  entries.remove(date);
+  await _prefs.setString(
+    storageKey,
+    jsonEncode(entries),
+  );
+}
 }
