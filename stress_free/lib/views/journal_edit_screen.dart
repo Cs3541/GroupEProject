@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/journal_store.dart'; 
+
+import '../models/journal_preferences_store.dart';
+import '../models/journal_store.dart';
 
 String? validatedDate(String value) {
   final dateText = value.trim();
@@ -17,17 +19,20 @@ String? validatedDate(String value) {
   }
   return dateText;
 }
+
 class JournalEditorScreen extends StatefulWidget {
   const JournalEditorScreen({
     super.key,
     required this.store,
     required this.initialDate,
     required this.initialText,
+    this.font = JournalFont.roboto,
   });
 
   final JournalStore store;
   final String initialDate;
   final String initialText;
+  final JournalFont font;
 
   @override
   State<JournalEditorScreen> createState() => _JournalEditorScreenState();
@@ -63,9 +68,9 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save entry: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not save entry: $error')));
     }
   }
 
@@ -100,6 +105,7 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
             children: [
               TextField(
                 controller: _dateController,
+                style: TextStyle(fontFamily: widget.font.family),
                 keyboardType: TextInputType.datetime,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
@@ -110,6 +116,7 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
               Expanded(
                 child: TextField(
                   controller: _entryController,
+                  style: TextStyle(fontFamily: widget.font.family),
                   expands: true,
                   minLines: null,
                   maxLines: null,

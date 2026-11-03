@@ -1,10 +1,14 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Stores one journal entry per date (YYYY-MM-DD) on this device.
 class JournalStore {
+  JournalStore({SharedPreferencesAsync? preferences})
+    : _prefs = preferences ?? SharedPreferencesAsync();
+
   static const String storageKey = 'stress_free_journal_entries';
-  final SharedPreferencesAsync _prefs = SharedPreferencesAsync();
+  final SharedPreferencesAsync _prefs;
 
   Future<Map<String, String>> loadAll() async {
     final saved = await _prefs.getString(storageKey);
@@ -30,4 +34,12 @@ class JournalStore {
   Future<void> clearAll() async {
     await _prefs.remove(storageKey);
   }
+  Future<void> deleteEntry(String date) async {
+  final entries = await loadAll();
+  entries.remove(date);
+  await _prefs.setString(
+    storageKey,
+    jsonEncode(entries),
+  );
+}
 }

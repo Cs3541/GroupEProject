@@ -1,52 +1,129 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../models/journal_preferences_store.dart';
 import '../models/journal_store.dart';
+import '../presenters/journal_settings_presenter.dart';
 import 'journal_edit_screen.dart';
+import 'journal_settings_screen.dart';
 
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
   /// supply a callback to open settings screen.
-  const JournalScreen({super.key, this.onOpenSettings});
+  const JournalScreen({
+    super.key,
+    this.onOpenSettings,
+    this.store,
+    this.preferences,
+  });
 
-  final VoidCallback? onOpenSettings;
+  final FutureOr<void> Function()? onOpenSettings;
+  final JournalStore? store;
+  final JournalPreferencesStore? preferences;
 
   @override
   State<JournalScreen> createState() => _JournalScreenState();
 }
 
 class _JournalScreenState extends State<JournalScreen> {
-  final JournalStore _store = JournalStore();
+  late final JournalStore _store;
+  late final JournalPreferencesStore _preferences;
+  late final JournalSettingsPresenter _settings;
   final TextEditingController _searchController = TextEditingController();
   Map<String, String> _entries = {};
   bool _loading = true;
+  bool _loadFailed = false;
 
   @override
   void initState() {
     super.initState();
+    _store = widget.store ?? JournalStore();
+    _preferences = widget.preferences ?? JournalPreferencesStore();
+    _settings = JournalSettingsPresenter(
+      journals: _store,
+      preferences: _preferences,
+    );
     _refreshEntries();
   }
 
   Future<void> _refreshEntries() async {
-    final entries = await _store.loadAll();
-    if (!mounted) return;
     setState(() {
-      _entries = entries;
-      _loading = false;
+      _loading = true;
+      _loadFailed = false;
     });
+    try {
+      final entries = await _store.loadAll();
+      await _settings.loadFont();
+      if (!mounted) return;
+      setState(() {
+        _entries = entries;
+        _loading = false;
+      });
+      if (_settings.message != null) _showMessage(_settings.message!);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _loadFailed = true;
+      });
+    }
+  }
+
+  Future<void> _openSettings() async {
+    if (widget.onOpenSettings != null) {
+      await widget.onOpenSettings!();
+    } else {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => JournalSettingsScreen(
+            journals: _store,
+            preferences: _preferences,
+          ),
+        ),
+      );
+    }
+    if (mounted) await _refreshEntries();
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _confirmDeleteEntry(String date) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete journal entry?'),
+        content: Text('Are you sure you want to delete the entry for $date?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed != true || !mounted) return;
+    await _store.deleteEntry(date);
+    if (mounted) await _refreshEntries();
   }
 
   Future<void> _openEditor(String date) async {
+    if (_loading || _loadFailed) return;
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => JournalEditorScreen(
           store: _store,
           initialDate: date,
           initialText: _entries[date] ?? '',
+          font: _settings.font,
         ),
       ),
     );
@@ -74,6 +151,7 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _settings.dispose();
     super.dispose();
   }
 
@@ -88,18 +166,28 @@ class _JournalScreenState extends State<JournalScreen> {
           IconButton(
             tooltip: 'Journal settings',
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              if (widget.onOpenSettings != null) {
-                widget.onOpenSettings!();
-              } else {
-                _showMessage('Navigate to Journal settings page');
-              }
-            },
+            onPressed: _loading ? null : _openSettings,
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
+      body: _loading || _loadFailed
+          ? Center(
+              child: _loading
+                  ? const CircularProgressIndicator()
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Could not load journals. Please try again.',
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: _refreshEntries,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+            )
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -121,40 +209,61 @@ class _JournalScreenState extends State<JournalScreen> {
                   child: const Text('View'),
                 ),
                 const SizedBox(height: 24),
-                Text('Recent entries',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Recent entries',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 if (dates.isEmpty)
                   const Text('No journal entries yet. Tap + to start writing.')
                 else
-                  ...dates.take(10).map(
-                    (date) => Card(
-                      child: ListTile(
-                        title: Text(date),
-                        subtitle: Text(
-                          _entries[date]!.trim().isEmpty
-                              ? '(Empty entry)'
-                              : _entries[date]!.replaceAll('\n', ' '),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                  ...dates
+                      .take(10)
+                      .map(
+                        (date) => Card(
+                          child: ListTile(
+                            title: Text(
+                              date,
+                              style: TextStyle(
+                                fontFamily: _settings.font.family,
+                              ),
+                            ),
+                            subtitle: Text(
+                              _entries[date]!.trim().isEmpty
+                                  ? '(Empty entry)'
+                                  : _entries[date]!.replaceAll('\n', ' '),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: _settings.font.family,
+                              ),
+                            ),
+                            trailing: IconButton(
+                              tooltip: 'Delete entry for $date',
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.red,
+                              ),
+                              onPressed: () => _confirmDeleteEntry(date),
+                            ),
+                            onTap: () => _openEditor(date),
+                          ),
                         ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => _openEditor(date),
                       ),
-                    ),
-                  ),
                 const SizedBox(height: 24),
-                Text('Favorite journals',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Favorite journals',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const Text('Favorites will be added in a future user story.'),
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _createNew,
+        onPressed: _loading || _loadFailed ? null : _createNew,
         icon: const Icon(Icons.add),
         label: const Text('New Entry'),
       ),
     );
   }
-}
 
+}
