@@ -91,6 +91,30 @@ class _JournalScreenState extends State<JournalScreen> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<void> _confirmDeleteEntry(String date) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete journal entry?'),
+        content: Text('Are you sure you want to delete the entry for $date?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+    await _store.deleteEntry(date);
+    if (mounted) await _refreshEntries();
+  }
+
   Future<void> _openEditor(String date) async {
     if (_loading || _loadFailed) return;
     await Navigator.of(context).push<void>(
@@ -218,6 +242,15 @@ class _JournalScreenState extends State<JournalScreen> {
                             onTap: () => _openEditor(date),
                           ),
                         ),
+                        trailing: IconButton(
+                          tooltip: 'Delete entry for $date',
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                          onPressed: () => _confirmDeleteEntry(date),
+                        ),
+                        onTap: () => _openEditor(date),
                       ),
                 const SizedBox(height: 24),
                 Text(
@@ -234,4 +267,5 @@ class _JournalScreenState extends State<JournalScreen> {
       ),
     );
   }
+
 }
