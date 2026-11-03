@@ -1,0 +1,252 @@
+[
+  {
+    "text": "I am worthy of love, respect, and happiness.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I accept myself exactly as I am while continuing to grow.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I deserve good things in life.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I am enough, just as I am.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I treat myself with kindness and compassion.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I am proud of the person I am becoming.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "My worth is not determined by other people's opinions.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I give myself permission to make mistakes and learn from them.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I celebrate my progress, no matter how small.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I deserve the same patience and understanding I give to others.",
+    "isFavorite": false,
+    "category": "Self-love"
+  },
+  {
+    "text": "I believe in my ability to accomplish great things.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I trust myself to make the right decisions for me.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I have unique strengths and talents that make me valuable.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I am capable of handling challenges that come my way.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I speak to myself with confidence and encouragement.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I am becoming more confident every day.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I have the courage to step outside my comfort zone.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I do not need to be perfect to be successful.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I trust my ability to figure things out.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I am allowed to take up space and let my voice be heard.",
+    "isFavorite": false,
+    "category": "Confidence"
+  },
+  {
+    "text": "I am capable of achieving the goals I set for myself.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "Every small step I take moves me closer to my dreams.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I choose progress over perfection.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I have the discipline to keep going when things get difficult.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I learn something valuable from every experience.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I am becoming stronger, wiser, and more capable.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I focus on what I can control and release what I cannot.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I am willing to work for the future I want.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "My past does not define my future.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I have the power to create positive changes in my life.",
+    "isFavorite": false,
+    "category": "Motivation"
+  },
+  {
+    "text": "I give myself permission to rest without feeling guilty.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I choose peace over unnecessary stress.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I allow myself to enjoy the present moment.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I release the need to compare my journey to others.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I welcome happiness into my life.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I can experience difficult emotions without letting them define me.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I am grateful for the good things, both big and small.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I trust that I can handle uncertainty one step at a time.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I deserve a life that feels fulfilling and meaningful.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I choose to focus on what brings me joy and peace.",
+    "isFavorite": false,
+    "category": "Peace"
+  },
+  {
+    "text": "I am building a future that aligns with my values and dreams.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I am open to new opportunities and experiences.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I have the ability to turn challenges into opportunities for growth.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I am capable of learning the skills I need to succeed.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I attract positive influences by choosing positive actions.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I am committed to becoming the best version of myself.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I celebrate other people's success while continuing to pursue my own.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I trust that consistent effort will help me grow.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I am creating a life I can be proud of.",
+    "isFavorite": false,
+    "category": "Success"
+  },
+  {
+    "text": "I look forward to the person I am becoming and the possibilities ahead of me.",
+    "isFavorite": false,
+    "category": "Success"
+  }
+]
