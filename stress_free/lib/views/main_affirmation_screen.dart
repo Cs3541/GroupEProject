@@ -51,6 +51,23 @@ Widget build(BuildContext context) {
       appBar: AppBar(
         title: const Text("Affirmations"),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            tooltip:"Notification Settings",
+            icon: const Icon(Icons.settings),
+            onPressed:  () async {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AffirmationSettingsScreen(),
+                ),
+              );
+              if (!mounted) return;
+              setState(() {});
+            }
+          ),
+        ],
       ),
       body: Column(
         children: [
