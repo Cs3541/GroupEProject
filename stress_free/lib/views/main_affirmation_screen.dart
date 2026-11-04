@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stress_free/views/affirmation_settings_screen.dart';
 import '../presenters/affirmation_presenter.dart';
 import '../models/affirmation_model.dart';
 
@@ -45,53 +46,75 @@ Widget build(BuildContext context) {
           ? _affirmations.where((a) => a.isFavorite).toList()
           : _affirmations.where((a) => a.category == _selectedCategory).toList();
 
-  return Center(
-    child: Column(
-      children: [
-        DropdownButton<String>(
-          value: _selectedCategory,
-          items: _categories.map((String category) {
-            return DropdownMenuItem<String>(
-              value: category,
-              child: Text(category),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedCategory = newValue;
-            });
-          },
-        ),
-        Expanded(
-          child: displayedAffirmations.isEmpty
-              ? const Center(child: Text("No affirmations available."))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: displayedAffirmations.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final affirmation = displayedAffirmations[index];
-                    if (_selectedCategory == 'All' || affirmation.category == _selectedCategory || (_selectedCategory == 'Favorites' && affirmation.isFavorite)) {
-                return SelectableText( // Allows users to select affirmation and select it as a favorite
-                  affirmation.text,
-                  textAlign: TextAlign.center,
-                  onTap: () {
-                    setState(() {
-                      affirmation.isFavorite = !affirmation.isFavorite;
-                    });
-                  },
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: affirmation.isFavorite ? Colors.yellow : Colors.black,
-                  ),   
-                );
-              } else {
-                return const SizedBox.shrink(); // Return an empty widget for non-matching categories
-              }
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Affirmations'),
+      actions: [
+        IconButton(
+          tooltip:"Notification Settings",
+          icon: const Icon(Icons.settings),
+          onPressed:  () async {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AffirmationSettingsScreen(),
+                ),
+              );
+              if (!mounted) return;
+              setState(() {});
+            },
+        )
+      ]
+    ),
+    body: Center(
+      child: Column(
+        children: [
+          DropdownButton<String>(
+            value: _selectedCategory,
+            items: _categories.map((String category) {
+              return DropdownMenuItem<String>(
+                value: category,
+                child: Text(category),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedCategory = newValue;
+              });
             },
           ),
-        ),
-      ],
-    ),
+          Expanded(
+            child: displayedAffirmations.isEmpty
+                ? const Center(child: Text("No affirmations available."))
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: displayedAffirmations.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final affirmation = displayedAffirmations[index];
+                      if (_selectedCategory == 'All' || affirmation.category == _selectedCategory || (_selectedCategory == 'Favorites' && affirmation.isFavorite)) {
+                  return SelectableText( // Allows users to select affirmation and select it as a favorite
+                    affirmation.text,
+                    textAlign: TextAlign.center,
+                    onTap: () {
+                      setState(() {
+                        affirmation.isFavorite = !affirmation.isFavorite;
+                      });
+                    },
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: affirmation.isFavorite ? Colors.yellow : Colors.black,
+                    ),   
+                  );
+                } else {
+                  return const SizedBox.shrink(); // Return an empty widget for non-matching categories
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    )
   );
 }
  
