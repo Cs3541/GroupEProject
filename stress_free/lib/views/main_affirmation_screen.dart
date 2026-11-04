@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stress_free/views/affirmation_settings_screen.dart';
 import '../presenters/affirmation_presenter.dart';
 import '../models/affirmation_model.dart';
 
@@ -50,6 +51,23 @@ Widget build(BuildContext context) {
       appBar: AppBar(
         title: const Text("Affirmations"),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            tooltip:"Notification Settings",
+            icon: const Icon(Icons.settings),
+            onPressed:  () async {
+              await Navigator.push<void>(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AffirmationSettingsScreen(),
+                ),
+              );
+              if (!mounted) return;
+              setState(() {});
+            }
+          ),
+        ],
       ),
       body: Column(
         children: [
