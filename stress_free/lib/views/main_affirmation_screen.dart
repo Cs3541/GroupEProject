@@ -46,8 +46,13 @@ Widget build(BuildContext context) {
           : _affirmations.where((a) => a.category == _selectedCategory).toList();
 
   return Center(
-    child: Column(
-      children: [
+    child: Scaffold(
+      appBar: AppBar(
+        title: const Text("Affirmations"),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Column(
+        children: [
         DropdownButton<String>(
           value: _selectedCategory,
           items: _categories.map((String category) {
@@ -81,7 +86,8 @@ Widget build(BuildContext context) {
                   },
                   style: TextStyle(
                     fontSize: 18,
-                    color: affirmation.isFavorite ? Colors.yellow : Colors.black,
+                    fontWeight: affirmation.isFavorite ? FontWeight.bold : FontWeight.normal,
+                    color: affirmation.isFavorite ? Colors.purple : Colors.black,
                   ),   
                 );
               } else {
@@ -91,6 +97,7 @@ Widget build(BuildContext context) {
           ),
         ),
       ],
+    ),
     ),
   );
 }
