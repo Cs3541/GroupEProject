@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/journal_preferences_store.dart';
@@ -130,6 +131,58 @@ class _JournalScreenState extends State<JournalScreen> {
     if (mounted) await _refreshEntries();
   }
 
+  // Opens an iOS-style scrolling date picker (year / month / day).
+  Future<void> _pickSearchDate() async {
+    final initialDate =
+        DateTime.tryParse(_searchController.text.trim()) ?? DateTime.now();
+    DateTime selectedDate = initialDate;
+
+    final pickedDate = await showModalBottomSheet<DateTime>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 340,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  const Text(' Please Select a date'),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(selectedDate),
+                    child: const Text('Done'),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  dateOrder: DatePickerDateOrder.ymd,
+                  minimumYear: 1900,
+                  maximumYear: 2100,
+                  initialDateTime: initialDate,
+                  onDateTimeChanged: (date) => selectedDate = date,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted || pickedDate == null) return;
+
+    final year = pickedDate.year.toString().padLeft(4, '0');
+    final month = pickedDate.month.toString().padLeft(2, '0');
+    final day = pickedDate.day.toString().padLeft(2, '0');
+    setState(() => _searchController.text = '$year-$month-$day');
+  }
+
   void _viewByDate() {
     // Per user story 2: an empty search does nothing for now.
     if (_searchController.text.trim().isEmpty) return;
@@ -195,13 +248,18 @@ class _JournalScreenState extends State<JournalScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: _searchController,
-                  keyboardType: TextInputType.datetime,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                  readOnly: true,
+                  onTap: _pickSearchDate,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
                     labelText: 'Entry date',
                     hintText: 'YYYY-MM-DD',
+                    suffixIcon: IconButton(
+                      tooltip: 'Select date',
+                      icon: const Icon(Icons.calendar_month),
+                      onPressed: _pickSearchDate,
+                    ),
                   ),
-                  onSubmitted: (_) => _viewByDate(),
                 ),
                 const SizedBox(height: 8),
                 ElevatedButton(
