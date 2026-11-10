@@ -35,6 +35,7 @@ class _JournalScreenState extends State<JournalScreen> {
   Map<String, String> _entries = {};
   bool _loading = true;
   bool _loadFailed = false;
+  bool _searchBusy = false;
 
   @override
   void initState() {
@@ -152,7 +153,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     onPressed: () => Navigator.of(sheetContext).pop(),
                     child: const Text('Cancel'),
                   ),
-                  const Text(' Please Select a date'),
+                  const Text('Select a date'),
                   TextButton(
                     onPressed: () => Navigator.of(sheetContext).pop(selectedDate),
                     child: const Text('Done'),
@@ -183,8 +184,9 @@ class _JournalScreenState extends State<JournalScreen> {
     setState(() => _searchController.text = '$year-$month-$day');
   }
 
-  void _viewByDate() {
-    // Per user story 2: an empty search does nothing for now.
+  Future<void> _viewByDate() async {
+    // An empty search does nothing; prevent multiple dialogs from overlapping.
+    if (_loading || _loadFailed || _searchBusy) return;
     if (_searchController.text.trim().isEmpty) return;
 
     final date = validatedDate(_searchController.text);
@@ -192,7 +194,53 @@ class _JournalScreenState extends State<JournalScreen> {
       _showMessage('Enter a valid date as YYYY-MM-DD.');
       return;
     }
-    _openEditor(date);
+
+    // Open an existing journal without asking the user to create one.
+    if (_entries.containsKey(date)) {
+      await _openEditor(date);
+      return;
+    }
+
+    // If the date is missing, ask before writing anything to local storage.
+    setState(() => _searchBusy = true);
+    try {
+      final shouldCreate = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('No journal found'),
+          content: Text(
+            'No journal exists for $date. Would you like to create a new journal?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Yes, create'),
+            ),
+          ],
+        ),
+      );
+
+      // Cancel, dismiss, or close the page: no journal is created.
+      if (!mounted || shouldCreate != true) return;
+
+      try {
+        // Persist the empty entry before opening the editor.
+        await _store.saveEntry(date, '');
+      } catch (error) {
+        if (mounted) _showMessage('Could not create journal: $error');
+        return;
+      }
+      if (!mounted) return;
+
+      setState(() => _entries[date] = '');
+      await _openEditor(date);
+    } finally {
+      if (mounted) setState(() => _searchBusy = false);
+    }
   }
 
   void _createNew() {
@@ -249,7 +297,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 TextField(
                   controller: _searchController,
                   readOnly: true,
-                  onTap: _pickSearchDate,
+                  onTap: _searchBusy ? null : _pickSearchDate,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
                     labelText: 'Entry date',
@@ -257,13 +305,13 @@ class _JournalScreenState extends State<JournalScreen> {
                     suffixIcon: IconButton(
                       tooltip: 'Select date',
                       icon: const Icon(Icons.calendar_month),
-                      onPressed: _pickSearchDate,
+                      onPressed: _searchBusy ? null : _pickSearchDate,
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: _viewByDate,
+                  onPressed: _searchBusy ? null : _viewByDate,
                   child: const Text('View'),
                 ),
                 const SizedBox(height: 24),
