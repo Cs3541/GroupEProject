@@ -8,6 +8,7 @@ import '../models/journal_store.dart';
 import '../presenters/journal_settings_presenter.dart';
 import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
+import '../views/homescreen.dart';
 
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
@@ -262,7 +263,25 @@ class _JournalScreenState extends State<JournalScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 0, 203, 182),
         title: const Text('Reflective Journaling'),
+        centerTitle: true,
+        leadingWidth: 100, 
+        leading: TextButton.icon(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('Home', style: TextStyle(color: Colors.black),),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.only(left: 8.0),
+            alignment: Alignment.centerLeft,
+            iconColor: Colors.black
+          ),
+        ),
         actions: [
           IconButton(
             tooltip: 'Journal settings',

@@ -3,6 +3,7 @@ import '../presenters/alarm_presenter.dart';
 import 'alarm_settings_screen.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
+import '../views/homescreen.dart';
 
 class MainAlarmScreen extends StatefulWidget {
   const MainAlarmScreen({super.key, this.presenter});
@@ -53,7 +54,25 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.lightBlue,
         title: const Text('Bedtime Alarm', style: TextStyle(fontSize: 22)),
+        centerTitle: true,
+        leadingWidth: 100, 
+        leading: TextButton.icon(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('Home', style: TextStyle(color: Colors.black),),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.only(left: 8.0),
+            alignment: Alignment.centerLeft,
+            iconColor: Colors.black
+          ),
+        ),
         actions: [
           IconButton(
             tooltip: 'Alarm settings',

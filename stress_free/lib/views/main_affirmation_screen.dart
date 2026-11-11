@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:stress_free/views/affirmation_settings_screen.dart';
 import '../presenters/affirmation_presenter.dart';
 import '../models/affirmation_model.dart';
+import '../views/homescreen.dart';
 
 class MainAffirmationScreen extends StatefulWidget {
   const MainAffirmationScreen({super.key});
@@ -49,8 +50,25 @@ Widget build(BuildContext context) {
   return Center(
     child: Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 59, 232, 255),
         title: const Text("Affirmations"),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        centerTitle: true,
+        leadingWidth: 100, 
+        leading: TextButton.icon(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomePage()),
+            );
+          },
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('Home', style: TextStyle(color: Colors.black),),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.only(left: 8.0),
+            alignment: Alignment.centerLeft,
+            iconColor: Colors.black
+          ),
+        ),
         actions: [
           IconButton(
             tooltip:"Notification Settings",
