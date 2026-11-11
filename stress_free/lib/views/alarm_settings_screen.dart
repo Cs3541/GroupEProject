@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-
 import '../presenters/alarm_presenter.dart';
+import '../presenters/sleep_session_presenter.dart';
 
 class AlarmSettingsScreen extends StatefulWidget {
-  const AlarmSettingsScreen({super.key, required AlarmPresenter alarmPresenter})
-    : _alarmPresenter = alarmPresenter;
+  const AlarmSettingsScreen({
+    super.key, 
+    required AlarmPresenter alarmPresenter, 
+    required SleepSessionPresenter sleepPresenter})
+    : _alarmPresenter = alarmPresenter,
+      _sleepPresenter = sleepPresenter;
 
   final AlarmPresenter _alarmPresenter;
+  final SleepSessionPresenter _sleepPresenter;
 
   @override
   State<AlarmSettingsScreen> createState() => _AlarmSettingsScreenState();
