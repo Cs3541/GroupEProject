@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:stress_free/views/main_navigation.dart';
-
+import 'package:stress_free/views/homescreen.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -24,7 +23,7 @@ class StressFreeApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MainNavigationScreen(),
+      home: const HomePage(),
     );
   }
 }
