@@ -3,6 +3,7 @@ import 'package:stress_free/views/journal_screen.dart';
 import 'package:stress_free/views/main_alarm_screen.dart';
 import 'package:stress_free/views/main_affirmation_screen.dart';
 import 'package:stress_free/views/settings_screen.dart';
+import 'package:stress_free/views/ambient_audio_screen.dart';
 import 'homescreen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const JournalScreen(),
     const MainAffirmationScreen(),
     const SettingsScreen(),
+    const AmbientAudioScreen(), // Add the AmbientAudioScreen to the list of screens
     ];
 
   void _onItemTapped(int index) {
@@ -58,6 +60,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.music_note),
+            label: 'Ambient Audio',
           ),
         ],
       ),

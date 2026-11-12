@@ -50,7 +50,6 @@ Widget build(BuildContext context) {
     child: Scaffold(
       appBar: AppBar(
         title: const Text("Affirmations"),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
             tooltip:"Notification Settings",

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:stress_free/views/main_navigation.dart';
-
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -22,8 +21,12 @@ class StressFreeApp extends StatelessWidget {
     return MaterialApp(
       title: 'Stress-Free',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+    scaffoldBackgroundColor: Color(0xFF8686AC),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF0F0E47),
+      foregroundColor: Colors.white,
+    ),
+  ),
       home: const MainNavigationScreen(),
     );
   }
