@@ -1,8 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:stress_free/views/homescreen.dart';
 import '../models/journal_preferences_store.dart';
 import '../models/journal_store.dart';
 import '../presenters/journal_settings_presenter.dart';
