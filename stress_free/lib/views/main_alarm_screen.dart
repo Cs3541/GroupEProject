@@ -21,9 +21,8 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   late final SleepSessionPresenter _sleepPresenter;
   final AudioPlayer _audioPlayer = AudioPlayer();
   late final Timer _timer;
-  bool _alarmStopped = false;
-  bool _isRinging = false; 
   late bool _isSleeping;
+  bool _wasRinging = false; // Was alarm ringing in previous alarm check
 
   @override
   void initState() {
@@ -36,7 +35,7 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
       _isSleeping = false;
     }
     _audioPlayer.setReleaseMode(ReleaseMode.loop); // Alarm loops 
-    _timer = Timer.periodic(const Duration(seconds: 1), _checkAlarmTime);
+    _timer = Timer.periodic(const Duration(seconds: 1), playAlarm); // Calls playAlarm every second
   }
 
   @override
@@ -46,18 +45,15 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
     super.dispose(); 
   }
 
-  void _checkAlarmTime(Timer timer) {
-    DateTime currentTime = DateTime.now();
-    if (currentTime.hour != _alarmPresenter.alarmTime.hour ||
-        currentTime.minute != _alarmPresenter.alarmTime.minute) {
-      _alarmStopped = false;
-      _isRinging = false;
-    } else if (_alarmPresenter.alarmOn &&
-        !_alarmStopped &&
-        !_isRinging) {
-      _audioPlayer.play(AssetSource('audio/alarm.wav'));
-      _isRinging = true;
+  void playAlarm(Timer timer) {
+    _alarmPresenter.checkAlarmTime(); // Check the alarm time (every second)
+    if (!_wasRinging  && _alarmPresenter.isRinging) { // If the alarm wasn't already ringing and it is now ringing
+      _audioPlayer.play(AssetSource('audio/alarm.wav')); // Play the alarm 
     }
+    if (_wasRinging && !_alarmPresenter.isRinging) { // If the alarm was ringing and now its not ringing
+      _audioPlayer.stop(); // Stop the audio
+    }
+     _wasRinging = _alarmPresenter.isRinging; // Screen knows alarm state
   }
 
   @override
@@ -118,14 +114,16 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
             else
               const Text('Alarm Off', style: TextStyle(fontSize: 60)),
             ElevatedButton(
-              onPressed: () async {
-                await _audioPlayer.stop(); // Stop the alarm
-                _alarmStopped = true; // The alarm should be stopped
-                _isRinging = false;  // The alarm shouldn't ring
+              onPressed: () {
+                _alarmPresenter.stopAlarm();
               },
               child: const Text('Stop Alarm', style: TextStyle(fontSize: 20))
             ),
             SizedBox(height:10),
+            ElevatedButton(
+              onPressed: () {},
+              child: const Text('Snooze', style: TextStyle(fontSize: 20))
+            ),
             Row(
               children: [
                 Expanded(
