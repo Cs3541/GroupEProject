@@ -11,7 +11,7 @@ class AffirmationSettingsScreen extends StatefulWidget {
 class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
   bool isNotificationsEnabled = true;
   int notificationRate = 60;
-  bool favoritesOnly = false;
+  bool isFavoritesOnly = false;
   List<DropdownMenuEntry<dynamic>> rateEntries = [
     DropdownMenuEntry(value: 15, label: "15 Minutes"),
     DropdownMenuEntry(value: 30, label: "30 Minutes"),
@@ -100,10 +100,9 @@ class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
       body: Column(
         children: [
           Row(
-            // Alarm On or Off
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Notifications Enabled:'),
+              Text('Notifications Enabled'),
               Switch(
                 value: isNotificationsEnabled,
                 onChanged: (value) => setState(() => isNotificationsEnabled = value),
@@ -129,6 +128,16 @@ class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
                 onPressed: _showNotificationCategorySelector,
                 child: Text('Open')
               )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Only Send Favorites'),
+              Switch(
+                value: isFavoritesOnly,
+                onChanged: (value) => setState(() => isFavoritesOnly = value),
+              ),
             ],
           ),
         ]
