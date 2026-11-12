@@ -36,8 +36,7 @@ class StressStatisticsScreen extends StatelessWidget {
                         color: colors.primary,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text('No stress ratings connected yet.'),
+                   
                   ],
                 ),
               ),
@@ -67,11 +66,7 @@ class StressStatisticsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'This screen is a layout placeholder. A later commit can '
-              'calculate the average and plot saved journal ratings.',
-            ),
+            
           ],
         ),
       ),
@@ -129,18 +124,9 @@ class _StressChartPlaceholder extends StatelessWidget {
                         color: colors.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.show_chart),
-                          SizedBox(height: 6),
-                          Text('Chart placeholder'),
-                          SizedBox(height: 4),
-                          Text(
-                            'Daily ratings will appear here',
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                      child: const SizedBox(
+                        width: double.infinity,
+                        height: 100,
                       ),
                     ),
                   ],
