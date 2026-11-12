@@ -8,11 +8,11 @@ import '../models/journal_store.dart';
 import '../presenters/journal_settings_presenter.dart';
 import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
-import '../views/homescreen.dart';
+import 'stress_statistics_screen.dart';
 
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
-  /// supply a callback to open settings screen.
+ 
   const JournalScreen({
     super.key,
     this.onOpenSettings,
@@ -383,10 +383,30 @@ class _JournalScreenState extends State<JournalScreen> {
                 const Text('Favorites will be added in a future user story.'),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _loading || _loadFailed ? null : _createNew,
-        icon: const Icon(Icons.add),
-        label: const Text('New Entry'),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'journal_new_entry',
+            onPressed: _loading || _loadFailed ? null : _createNew,
+            icon: const Icon(Icons.add),
+            label: const Text('New Entry'),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.small(
+            heroTag: 'journal_statistics',
+            tooltip: 'View stress statistics',
+            onPressed: () {
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => const StressStatisticsScreen(),
+                ),
+              );
+            },
+            child: const Icon(Icons.bar_chart),
+          ),
+        ],
       ),
     );
   }

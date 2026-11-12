@@ -42,6 +42,7 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
   late final TextEditingController _dateController;
   late final TextEditingController _entryController;
   bool _saving = false;
+  int _stressRating = 5;
 
   @override
   void initState() {
@@ -128,6 +129,47 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
                 ),
               ),
               if (_saving) const LinearProgressIndicator(),
+
+const SizedBox(height: 16),
+
+Text(
+  'How stressed do you feel today?',
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+const SizedBox(height: 8),
+
+Text(
+  'Stress Level: $_stressRating / 10',
+  style: const TextStyle(fontSize: 16),
+),
+
+Slider(
+  value: _stressRating.toDouble(),
+  min: 0,
+  max: 10,
+  divisions: 10,
+  label: _stressRating.toString(),
+  onChanged: (value) {
+    setState(() {
+      _stressRating = value.round();
+    });
+  },
+),
+
+const Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text('0 - No Stress'),
+    Text('10 - Extremely Stressed'),
+  ],
+),
+
+const SizedBox(height: 8),
+
             ],
           ),
         ),
