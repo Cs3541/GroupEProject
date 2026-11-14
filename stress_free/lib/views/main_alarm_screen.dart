@@ -7,10 +7,10 @@ import 'dart:async';
 import '../views/homescreen.dart';
 
 class MainAlarmScreen extends StatefulWidget {
-  const MainAlarmScreen({super.key, this.aPresenter, this.ssPresenter});
+  const MainAlarmScreen({super.key, this.aPresenter, this.sPresenter});
 
   final AlarmPresenter? aPresenter;
-  final SleepSessionPresenter? ssPresenter;
+  final SleepSessionPresenter? sPresenter;
 
   @override
   State<MainAlarmScreen> createState() => _MainAlarmScreenState();
@@ -28,7 +28,7 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   void initState() {
     super.initState();
     _alarmPresenter = widget.aPresenter ?? AlarmPresenter();
-    _sleepPresenter = widget.ssPresenter ?? SleepSessionPresenter();
+    _sleepPresenter = widget.sPresenter ?? SleepSessionPresenter();
     if (_sleepPresenter.activeSession != null) {
       _isSleeping = true;
     } else {
@@ -54,6 +54,7 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
       _audioPlayer.stop(); // Stop the audio
     }
      _wasRinging = _alarmPresenter.isRinging; // Screen knows alarm state
+     setState(() {});
   }
 
   @override
@@ -113,15 +114,20 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
               )
             else
               const Text('Alarm Off', style: TextStyle(fontSize: 60)),
+            if (_alarmPresenter.snoozing) 
+              Text("Snoozing Until: ${TimeOfDay.fromDateTime(_alarmPresenter.snoozeTime).format(context)}"),
             ElevatedButton(
-              onPressed: () {
-                _alarmPresenter.stopAlarm();
-              },
+              onPressed: _alarmPresenter.isRinging || _alarmPresenter.snoozing ?() {
+                _alarmPresenter.stopAlarm(); 
+                }: null,
               child: const Text('Stop Alarm', style: TextStyle(fontSize: 20))
             ),
             SizedBox(height:10),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: _alarmPresenter.isRinging ? () {
+                _alarmPresenter.snoozeAlarm();
+
+              }: null,
               child: const Text('Snooze', style: TextStyle(fontSize: 20))
             ),
             Row(
