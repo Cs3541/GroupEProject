@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../presenters/notification_presenter.dart';
 
 class AffirmationSettingsScreen extends StatefulWidget {
   const AffirmationSettingsScreen({super.key});
@@ -9,6 +10,8 @@ class AffirmationSettingsScreen extends StatefulWidget {
 }
 
 class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
+  bool _isLoading = true;
+  
   bool isNotificationsEnabled = true;
   int notificationRate = 60;
   bool isFavoritesOnly = false;
@@ -26,7 +29,9 @@ class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
   bool isPeace = true;
   bool isSuccess = true;
 
-
+  Future<void> _loadSettings() async {
+    
+  }
 
   void _showNotificationCategorySelector() {
     showDialog(
@@ -95,6 +100,9 @@ class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+    return const Center(child: CircularProgressIndicator());
+  }
     return Scaffold(
       appBar: AppBar(title: Text('Notification Settings')),
       body: Column(
