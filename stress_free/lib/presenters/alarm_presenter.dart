@@ -10,9 +10,22 @@ class AlarmPresenter {
   bool _snoozing = false;
   late DateTime _snoozeTime;
 
+  final Map<String, String> _alarmSounds = {
+    'Default': 'audio/alarm_sounds/alarm.wav',
+    'Ambient 1': 'audio/alarm_sounds/ambient1.mp3',
+    'Ambient 2': 'audio/alarm_sounds/ambient2.mp3',
+    'Birds': 'audio/alarm_sounds/birds.mp3',
+    'Bounce': 'audio/alarm_sounds/bounce.mp3',
+    'Chimes': 'audio/alarm_sounds/chimes.mp3',
+    'Harp': 'audio/alarm_sounds/harp.mp3',
+    'Marimba': 'audio/alarm_sounds/marimba.mp3',
+    'Piano': 'audio/alarm_sounds/piano.mp3',
+    'Synth': 'audio/alarm_sounds/synth.mp3'
+  };
 
   bool get alarmOn => _alarm.alarmOn;
   TimeOfDay get alarmTime => _alarm.alarmTime;
+  String get alarmSound => _alarm.alarmSound;
   bool get notificationsOn => _alarm.notificationsOn;
   String get alarmName => _alarm.alarmName;
   String? get error => _error;
@@ -22,12 +35,15 @@ class AlarmPresenter {
   bool get snoozing => _snoozing;
   DateTime get snoozeTime => _snoozeTime;
 
+  Map<String, String> get alarmSounds => _alarmSounds;
+
   AlarmPresenter({Alarm? alarm})
       : _alarm =
             alarm ??
             Alarm(
               alarmOn: false,
               alarmTime: const TimeOfDay(hour: 8, minute: 0),
+              alarmSound: 'audio/alarm_sounds/alarm.wav',
               notificationsOn: false,
               alarmName: 'My Alarm',
             );
@@ -35,6 +51,7 @@ class AlarmPresenter {
   bool updateAlarm(
     bool alarmOn,
     TimeOfDay alarmTime,
+    String alarmSound,
     bool notificationsOn,
     String alarmName,
   ) {
@@ -43,7 +60,7 @@ class AlarmPresenter {
       _error = 'Enter an alarm name.';
       return false;
     }
-    _alarm.updateAlarm(alarmOn, alarmTime, notificationsOn, name);
+    _alarm.updateAlarm(alarmOn, alarmTime, alarmSound, notificationsOn, name);
     _error = null;
     return true;
   }

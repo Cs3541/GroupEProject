@@ -48,7 +48,7 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   void playAlarm(Timer timer) {
     _alarmPresenter.checkAlarmTime(); // Check the alarm time (every second)
     if (!_wasRinging  && _alarmPresenter.isRinging) { // If the alarm wasn't already ringing and it is now ringing
-      _audioPlayer.play(AssetSource('audio/alarm.wav')); // Play the alarm 
+      _audioPlayer.play(AssetSource(_alarmPresenter.alarmSound)); // Play the alarm 
     }
     if (_wasRinging && !_alarmPresenter.isRinging) { // If the alarm was ringing and now its not ringing
       _audioPlayer.stop(); // Stop the audio
