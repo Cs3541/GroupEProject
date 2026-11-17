@@ -21,7 +21,8 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   late final SleepSessionPresenter _sleepPresenter;
   final AudioPlayer _audioPlayer = AudioPlayer();
   late final Timer _timer;
-  late bool _isSleeping;
+  bool _isSleeping = false;
+  bool _loadingSessions = true;
   bool _wasRinging = false; // Was alarm ringing in previous alarm check
 
   @override
@@ -29,13 +30,34 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
     super.initState();
     _alarmPresenter = widget.aPresenter ?? AlarmPresenter();
     _sleepPresenter = widget.sPresenter ?? SleepSessionPresenter();
-    if (_sleepPresenter.activeSession != null) {
-      _isSleeping = true;
-    } else {
-      _isSleeping = false;
-    }
+    // if (_sleepPresenter.activeSession != null) {
+    //   _isSleeping = true;
+    // } else {
+    //   _isSleeping = false;
+    // }
     _audioPlayer.setReleaseMode(ReleaseMode.loop); // Alarm loops 
     _timer = Timer.periodic(const Duration(seconds: 1), playAlarm); // Calls playAlarm every second
+    loadSleepSessions();
+  }
+
+  Future<void> loadSleepSessions() async {
+    try{
+      await _sleepPresenter.loadSessions();
+      if (!mounted) {return;}
+      setState(() {
+        _isSleeping = _sleepPresenter.activeSession != null;
+        _loadingSessions = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _loadingSessions = false;
+      });
+       ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load sleep sessions')),
+      );
+    }
   }
 
   @override
@@ -138,13 +160,20 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(0, 120)
                       ),
-                      onPressed: !_isSleeping ? () {
-                        _sleepPresenter.addSession(DateTime.now());
-                        _isSleeping = true;
-                        setState(() {});
+                      onPressed: !_isSleeping && !_loadingSessions ? () async {
+                        try {
+                          await _sleepPresenter.addSession(DateTime.now());
+                          if (!mounted) return;
+                          setState((){
+                            _isSleeping = true;
+                          });
                           ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Rest Well!"))
-                        );
+                          SnackBar(content: Text("Rest Well!")));
+                        } catch (e) {
+                          if (!mounted) {return;}
+                          ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Could not start sleep session")));
+                        }
                       }: null, // disable the button
                       child: Text('Sleep')
                     ),
@@ -156,24 +185,44 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(0, 120)
                       ),
-                      onPressed: _isSleeping ? () {
-                        _sleepPresenter.endSession(DateTime.now());
-                        _isSleeping = false;
-                        setState(() {});
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      onPressed: _isSleeping && !_loadingSessions ? () async {
+                        try {
+                          await _sleepPresenter.endSession(DateTime.now());
+                          if (!mounted) {return;}
+                          setState(() {
+                            _isSleeping = false;
+          
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text("Sleep Session Saved!"),
                             duration: Duration(seconds: 6),
                             persist: false,
                             action: SnackBarAction(
                               label: "UNDO",
-                              onPressed: () {
-                                bool undone = _sleepPresenter.undoWakeUp();
-                                if(undone) {setState((){_isSleeping = true;});}
+                              onPressed: () async {
+                                try {
+                                  bool undone = await _sleepPresenter.undoWakeUp();
+                                  if (!mounted) return;
+                                  if(undone) {setState((){_isSleeping = true;});}
+                                } catch (e) {
+                                  if (!mounted) {return;}
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Could not save sleep session")),
+                                    );
+
+                                }
+                                
                                 },
                             )
                           )
                         );
+                        } catch (e) {
+                          if (!mounted) {return;}
+                           ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Could not save sleep session: $e")),
+                          );
+                        }  
                       }: null,
                       child: Text('Wake Up')
                     ),
