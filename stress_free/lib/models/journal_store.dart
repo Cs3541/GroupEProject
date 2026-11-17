@@ -1,44 +1,54 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-
+// Connect to Firebase
 class JournalStore {
-  JournalStore({SharedPreferencesAsync? preferences})
-    : _prefs = preferences ?? SharedPreferencesAsync();
+  JournalStore({FirebaseFirestore? firestore, FirebaseAuth? auth})
+      : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance;
 
-  static const String storageKey = 'stress_free_journal_entries';
-  final SharedPreferencesAsync _prefs;
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
 
-  Future<Map<String, String>> loadAll() async {
-    final saved = await _prefs.getString(storageKey);
-    if (saved == null || saved.isEmpty) return {};
+  CollectionReference<Map<String, dynamic>> get _journals {
+    final user = _auth.currentUser;
 
-    try {
-      final decoded = jsonDecode(saved);
-      if (decoded is! Map) return {};
-      return decoded.map<String, String>(
-        (key, value) => MapEntry(key.toString(), value.toString()),
+    // Organize journals by user
+    if (user == null) {
+      throw StateError(
+        'No Firebase user is signed in. Sign in before opening the journal.',
       );
-    } on FormatException {
-      return {};
     }
+
+    return _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('journal_entries');
   }
 
-  Future<void> saveEntry(String date, String content) async {
-    final entries = await loadAll();
-    entries[date] = content;
-    await _prefs.setString(storageKey, jsonEncode(entries));
-  }
+  Future<void> saveEntry(
+    String date,
+    String content, {
+    int? stressRating,
+  }) async {
+    if (stressRating != null &&
+        (stressRating < 0 || stressRating > 10)) {
+      throw RangeError.range(stressRating, 0, 10, 'stressRating');
+    }
 
-  Future<void> clearAll() async {
-    await _prefs.remove(storageKey);
+    final data = <String, dynamic>{
+      'date': date,
+      'content': content,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (stressRating != null) {
+      data['stressRating'] = stressRating;
+    }
+
+    await _journals.doc(date).set(
+      data,
+      SetOptions(merge: true),
+    );
   }
-  Future<void> deleteEntry(String date) async {
-  final entries = await loadAll();
-  entries.remove(date);
-  await _prefs.setString(
-    storageKey,
-    jsonEncode(entries),
-  );
-}
 }
