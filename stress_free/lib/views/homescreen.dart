@@ -4,6 +4,7 @@ import 'package:stress_free/views/main_affirmation_screen.dart';
 import 'package:stress_free/views/main_alarm_screen.dart';
 import 'package:stress_free/views/settings_screen.dart';
 import 'package:stress_free/widgets/homescreen_nav_card.dart';
+import 'package:stress_free/views/ambient_audio_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -50,6 +51,11 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () => onPressed(MainAffirmationScreen()),
                 title: 'Affirmations',
                 backgroundColor: const Color.fromARGB(255, 59, 232, 255),
+              ),
+              NavCard(
+                onPressed: () => onPressed(AmbientAudioScreen()),
+                title: 'Ambient Audio',
+                backgroundColor: const Color.fromRGBO(203, 59, 255, 1),
               ),
               NavCard(
                 onPressed: () => onPressed(SettingsScreen()),

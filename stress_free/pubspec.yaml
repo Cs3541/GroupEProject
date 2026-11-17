@@ -66,6 +66,8 @@ flutter:
   assets:
     - assets/audio/alarm_sounds/
     - assets/affirmation.json
+    - assets/audio/ambient/rain.wav
+    - assets/audio/ambient/ocean.mp3
     
   fonts:
     - family: JournalRoboto
