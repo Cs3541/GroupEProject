@@ -1,8 +1,7 @@
 import 'dart:convert';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Stores one journal entry per date (YYYY-MM-DD) on this device.
+
 class JournalStore {
   JournalStore({SharedPreferencesAsync? preferences})
     : _prefs = preferences ?? SharedPreferencesAsync();

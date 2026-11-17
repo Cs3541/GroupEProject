@@ -9,7 +9,7 @@ import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
 import 'stress_statistics_screen.dart';
 
-//test the commit//
+
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
  
@@ -154,7 +154,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     onPressed: () => Navigator.of(sheetContext).pop(),
                     child: const Text('Cancel'),
                   ),
-                  const Text('Select a date'),
+                  const Text('Select aaaaaa date'),
                   TextButton(
                     onPressed: () => Navigator.of(sheetContext).pop(selectedDate),
                     child: const Text('Done'),
