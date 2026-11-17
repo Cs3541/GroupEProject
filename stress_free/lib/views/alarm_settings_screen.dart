@@ -26,6 +26,7 @@ class _AlarmSettingsScreenState extends State<AlarmSettingsScreen> {
   late String _alarmName;
   String? _nameError;
 
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -37,17 +38,28 @@ class _AlarmSettingsScreenState extends State<AlarmSettingsScreen> {
     _alarmName = widget._alarmPresenter.alarmName;
   }
 
-  void _save() {
-    if (widget._alarmPresenter.updateAlarm(
+  Future<void> _save() async {
+    if (_isSaving) return;
+    setState(() {
+      _isSaving = true;
+      _nameError = null;
+    });
+    final success = await widget._alarmPresenter.updateAlarm(
       _alarmOn,
       _alarmTime,
       _alarmSound,
       _notificationsOn,
       _alarmName,
-    )) {
+    );
+    if (!mounted) return;
+    if (success) {
       Navigator.pop(context);
     } else {
-      setState(() => _nameError = widget._alarmPresenter.error);
+      setState((){
+        _nameError = widget._alarmPresenter.error ??
+        'Unable to save alarm.';
+        _isSaving = false;
+      });
     }
   }
 
@@ -135,7 +147,9 @@ class _AlarmSettingsScreenState extends State<AlarmSettingsScreen> {
               ),
             ],
           ),
-          ElevatedButton(onPressed: _save, child: const Text('Save')),
+          ElevatedButton(
+            onPressed:_isSaving ? null: _save, 
+            child: const Text('Save')),
         ],
       ),
     );

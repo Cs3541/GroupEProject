@@ -48,21 +48,53 @@ class AlarmPresenter {
               alarmName: 'My Alarm',
             );
 
-  bool updateAlarm(
+  Future<void> loadAlarm() async {
+    final savedAlarm = await Alarm.fetchAlarm();
+    if (savedAlarm != null) {
+      _alarm.updateAlarm(
+        savedAlarm.alarmOn,
+        savedAlarm.alarmTime,
+        savedAlarm.alarmSound,
+        savedAlarm.notificationsOn,
+        savedAlarm.alarmName,
+      );
+    }
+  }
+
+  Future<bool> updateAlarm(
     bool alarmOn,
     TimeOfDay alarmTime,
     String alarmSound,
     bool notificationsOn,
     String alarmName,
-  ) {
+  ) async {
     final name = alarmName.trim();
     if (name.isEmpty) {
       _error = 'Enter an alarm name.';
       return false;
     }
+
+    final oldAlarmOn = _alarm.alarmOn;
+    final oldAlarmTime = _alarm.alarmTime;
+    final oldAlarmSound = _alarm.alarmSound;
+    final oldNotificationsOn = _alarm.notificationsOn;
+    final oldAlarmName = _alarm.alarmName;
+
     _alarm.updateAlarm(alarmOn, alarmTime, alarmSound, notificationsOn, name);
-    _error = null;
-    return true;
+    try {
+      await _alarm.saveAlarm();
+      _error = null;
+      return true;
+    } catch (e) {
+      _alarm.updateAlarm(
+      oldAlarmOn,
+      oldAlarmTime,
+      oldAlarmSound,
+      oldNotificationsOn,
+      oldAlarmName,
+      );
+      return false;
+    }
   }
 
   void checkAlarmTime() {

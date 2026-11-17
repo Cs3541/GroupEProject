@@ -20,24 +20,39 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
   late final AlarmPresenter _alarmPresenter;
   late final SleepSessionPresenter _sleepPresenter;
   final AudioPlayer _audioPlayer = AudioPlayer();
-  late final Timer _timer;
+  Timer? _timer;
   bool _isSleeping = false;
   bool _loadingSessions = true;
   bool _wasRinging = false; // Was alarm ringing in previous alarm check
+  bool _loadingAlarm = true;
 
   @override
   void initState() {
     super.initState();
     _alarmPresenter = widget.aPresenter ?? AlarmPresenter();
     _sleepPresenter = widget.sPresenter ?? SleepSessionPresenter();
-    // if (_sleepPresenter.activeSession != null) {
-    //   _isSleeping = true;
-    // } else {
-    //   _isSleeping = false;
-    // }
     _audioPlayer.setReleaseMode(ReleaseMode.loop); // Alarm loops 
-    _timer = Timer.periodic(const Duration(seconds: 1), playAlarm); // Calls playAlarm every second
+    initializeScreen();
+  }
+
+  Future<void> initializeScreen() async {
     loadSleepSessions();
+    try {
+    await _alarmPresenter.loadAlarm();
+    if (!mounted) return;
+    setState(() {
+      _loadingAlarm = false;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), playAlarm,);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingAlarm = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not load alarm settings')),
+      );
+    }
   }
 
   Future<void> loadSleepSessions() async {
@@ -59,11 +74,10 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
       );
     }
   }
-
   @override
   void dispose() {
     _audioPlayer.dispose();
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose(); 
   }
 
@@ -138,20 +152,31 @@ class _MainAlarmScreenState extends State<MainAlarmScreen> {
               const Text('Alarm Off', style: TextStyle(fontSize: 60)),
             if (_alarmPresenter.snoozing) 
               Text("Snoozing Until: ${TimeOfDay.fromDateTime(_alarmPresenter.snoozeTime).format(context)}"),
-            ElevatedButton(
-              onPressed: _alarmPresenter.isRinging || _alarmPresenter.snoozing ?() {
-                _alarmPresenter.stopAlarm(); 
-                }: null,
-              child: const Text('Stop Alarm', style: TextStyle(fontSize: 20))
+            SizedBox(
+              width: double.infinity,
+              height: 90,
+              child: 
+                ElevatedButton(
+                  onPressed: _alarmPresenter.isRinging || _alarmPresenter.snoozing ?() {
+                    _alarmPresenter.stopAlarm(); 
+                  }: null,
+                  child: const Text('Stop Alarm', style: TextStyle(fontSize: 20))
+                ),
             ),
+        
             SizedBox(height:10),
-            ElevatedButton(
-              onPressed: _alarmPresenter.isRinging ? () {
-                _alarmPresenter.snoozeAlarm();
-
-              }: null,
-              child: const Text('Snooze', style: TextStyle(fontSize: 20))
-            ),
+            SizedBox(
+              width: double.infinity,
+              height: 90,
+              child: 
+                ElevatedButton(
+                  onPressed: _alarmPresenter.isRinging ? () {
+                    _alarmPresenter.snoozeAlarm();
+                    }: null,
+                  child: const Text('Snooze', style: TextStyle(fontSize: 20))
+                ), 
+             ),
+            SizedBox(height:10),
             Row(
               children: [
                 Expanded(
