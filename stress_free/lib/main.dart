@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:stress_free/views/homescreen.dart';
+import 'package:stress_free/models/auth_service.dart';
+import 'package:stress_free/views/auth_gate.dart';
+
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -14,7 +16,9 @@ Future<void> main() async {
 }
 
 class StressFreeApp extends StatelessWidget {
-  const StressFreeApp({super.key});
+  const StressFreeApp({super.key, this.authService});
+
+  final AuthService? authService;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,7 @@ class StressFreeApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomePage(),
+      home: AuthGate(authService: authService),
     );
   }
 }
