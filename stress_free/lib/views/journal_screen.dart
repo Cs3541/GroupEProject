@@ -8,7 +8,7 @@ import '../presenters/journal_settings_presenter.dart';
 import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
 import 'stress_statistics_screen.dart';
-import 'homescreen.dart';
+
 
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
