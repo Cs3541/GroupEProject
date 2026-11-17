@@ -190,12 +190,13 @@ void main() {
         alarm: Alarm(
           alarmOn: false,
           alarmTime: const TimeOfDay(hour: 8, minute: 0),
+          alarmSound: 'alarm.wav',
           notificationsOn: false,
           alarmName: 'Original alarm',
         ),
       );
       await tester.pumpWidget(
-        MaterialApp(home: MainAlarmScreen(presenter: presenter)),
+        MaterialApp(home: MainAlarmScreen(aPresenter: presenter)),
       );
       expect(find.text('Original alarm'), findsOneWidget);
       expect(find.text('Alarm Off'), findsOneWidget);
@@ -270,7 +271,7 @@ void main() {
     (tester) async {
       final presenter = AlarmPresenter();
       await tester.pumpWidget(
-        MaterialApp(home: MainAlarmScreen(presenter: presenter)),
+        MaterialApp(home: MainAlarmScreen(aPresenter: presenter)),
       );
       expect(find.text('My Alarm'), findsOneWidget);
       expect(find.text('Alarm Off'), findsOneWidget);

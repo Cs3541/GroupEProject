@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:stress_free/views/affirmation_settings_screen.dart';
+import 'package:stress_free/views/notification_settings_screen.dart';
 import '../presenters/affirmation_presenter.dart';
 import '../models/affirmation_model.dart';
 import '../views/homescreen.dart';
