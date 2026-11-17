@@ -1,42 +1,81 @@
 import 'package:flutter/material.dart';
+import '../models/notification_settings_model.dart';
 import '../presenters/notification_presenter.dart';
 
 class AffirmationSettingsScreen extends StatefulWidget {
   const AffirmationSettingsScreen({super.key});
 
   @override
-  State<AffirmationSettingsScreen> createState() => _AffirmationSettingsScreenState();
-
+  State<AffirmationSettingsScreen> createState() =>
+      _AffirmationSettingsScreenState();
 }
 
-class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
-  bool _isLoading = true;
-  
-  bool isNotificationsEnabled = true;
-  int notificationRate = 60;
-  bool isFavoritesOnly = false;
-  List<DropdownMenuEntry<dynamic>> rateEntries = [
-    DropdownMenuEntry(value: 15, label: "15 Minutes"),
-    DropdownMenuEntry(value: 30, label: "30 Minutes"),
-    DropdownMenuEntry(value: 60, label: "1 Hour"),
-    DropdownMenuEntry(value: 180, label: "3 Hours"),
-    DropdownMenuEntry(value: 480, label: "8 Hours"),
-    DropdownMenuEntry(value: 1440, label: "Daily"),    
-  ];
-  bool isMotivation = true;
-  bool isSelfLove = true;
-  bool isConfidence = true;
-  bool isPeace = true;
-  bool isSuccess = true;
+class _AffirmationSettingsScreenState
+    extends State<AffirmationSettingsScreen>
+    implements NotificationView {
 
-  Future<void> _loadSettings() async {
-    
+  late NotificationSettingsModel model;
+  late NotificationPresenter presenter;
+
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    model = NotificationSettingsModel();
+
+    presenter = NotificationPresenter(
+      view: this,
+      model: model,
+    );
+
+    presenter.loadSettings();
+  }
+
+  // Called when settings finish loading
+  @override
+  void onSettingsLoaded() {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  // Called when settings finish saving
+  @override
+  void onSettingsSaved() {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Settings saved')),
+    );
+  }
+
+  // Called when something goes wrong
+  @override
+  void onError(String message) {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void _updateSettings(VoidCallback update) {
+    setState(update);
+    presenter.saveSettings();
   }
 
   void _showNotificationCategorySelector() {
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -44,112 +83,162 @@ class _AffirmationSettingsScreenState extends State<AffirmationSettingsScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CheckboxListTile(
-                    title: Text('Motivation'),
-                    value: isMotivation,
-                    onChanged: (value) {
-                      isMotivation = !isMotivation;
-                      setDialogState(() {});
-                      }
+                  _categoryCheckbox(
+                    'Motivation',
+                    model.isMotivation,
+                    (value) {
+                      setDialogState(() {
+                        model.isMotivation = value!;
+                      });
+                    },
                   ),
-                  CheckboxListTile(
-                    title: Text('Self-love'),
-                    value: isSelfLove,
-                    onChanged: (value) {
-                      isSelfLove = !isSelfLove;
-                      setDialogState(() {});
-                      }
-                  ),CheckboxListTile(
-                    title: Text('Confidence'),
-                    value: isConfidence,
-                    onChanged: (value) {
-                      isConfidence = !isConfidence;
-                      setDialogState(() {});
-                      }
+                  _categoryCheckbox(
+                    'Self-love',
+                    model.isSelfLove,
+                    (value) {
+                      setDialogState(() {
+                        model.isSelfLove = value!;
+                      });
+                    },
                   ),
-                  CheckboxListTile(
-                    title: Text('Peace'),
-                    value: isPeace,
-                    onChanged: (value) {
-                      isPeace = !isPeace;
-                      setDialogState(() {});
-                    }
+                  _categoryCheckbox(
+                    'Confidence',
+                    model.isConfidence,
+                    (value) {
+                      setDialogState(() {
+                        model.isConfidence = value!;
+                      });
+                    },
                   ),
-                  CheckboxListTile(
-                    title: Text('Success'),
-                    value: isSuccess,
-                    onChanged: (value) {
-                      isSuccess = !isSuccess;
-                      setDialogState(() {});
-                      }
+                  _categoryCheckbox(
+                    'Peace',
+                    model.isPeace,
+                    (value) {
+                      setDialogState(() {
+                        model.isPeace = value!;
+                      });
+                    },
                   ),
-                ]
+                  _categoryCheckbox(
+                    'Success',
+                    model.isSuccess,
+                    (value) {
+                      setDialogState(() {
+                        model.isSuccess = value!;
+                      });
+                    },
+                  ),
+                ],
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Confirm')
-                )
-              ]
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    presenter.saveSettings();
+                  },
+                  child: const Text('Confirm'),
+                ),
+              ],
             );
-          }
+          },
         );
-      }
+      },
+    );
+  }
+
+  Widget _categoryCheckbox(
+    String title,
+    bool value,
+    ValueChanged<bool?> onChanged,
+  ) {
+    return CheckboxListTile(
+      title: Text(title),
+      value: value,
+      onChanged: onChanged,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-    return const Center(child: CircularProgressIndicator());
-  }
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text('Notification Settings')),
+      appBar: AppBar(
+        title: const Text('Notification Settings'),
+      ),
       body: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Notifications Enabled'),
+              const Text('Notifications Enabled'),
               Switch(
-                value: isNotificationsEnabled,
-                onChanged: (value) => setState(() => isNotificationsEnabled = value),
+                value: model.isNotificationsEnabled,
+                onChanged: (value) {
+                  _updateSettings(() {
+                    model.isNotificationsEnabled = value;
+                  });
+                },
               ),
             ],
           ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Notification Frequency'),
-              DropdownMenu(
-                dropdownMenuEntries: rateEntries,
-                initialSelection: rateEntries[2].value,
-                onSelected: (value) => setState(() => notificationRate = value)
-              )
+              const Text('Notification Frequency'),
+              DropdownMenu<int>(
+                dropdownMenuEntries: const [
+                  DropdownMenuEntry(value: 15, label: '15 Minutes'),
+                  DropdownMenuEntry(value: 30, label: '30 Minutes'),
+                  DropdownMenuEntry(value: 60, label: '1 Hour'),
+                  DropdownMenuEntry(value: 180, label: '3 Hours'),
+                  DropdownMenuEntry(value: 480, label: '8 Hours'),
+                  DropdownMenuEntry(value: 1440, label: 'Daily'),
+                ],
+                initialSelection: model.notificationRate,
+                onSelected: (value) {
+                  if (value == null) return;
+
+                  _updateSettings(() {
+                    model.notificationRate = value;
+                  });
+                },
+              ),
             ],
           ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Notification Categories'),
+              const Text('Notification Categories'),
               TextButton(
                 onPressed: _showNotificationCategorySelector,
-                child: Text('Open')
-              )
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Only Send Favorites'),
-              Switch(
-                value: isFavoritesOnly,
-                onChanged: (value) => setState(() => isFavoritesOnly = value),
+                child: const Text('Open'),
               ),
             ],
           ),
-        ]
-      )
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Only Send Favorites'),
+              Switch(
+                value: model.isFavoritesOnly,
+                onChanged: (value) {
+                  _updateSettings(() {
+                    model.isFavoritesOnly = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

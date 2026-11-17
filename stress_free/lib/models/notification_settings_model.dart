@@ -1,24 +1,70 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class NotificationSettings {
-  bool isNotificationsEnabled = true;
-  int notificationRate = 60;
-  bool isFavoritesOnly = false;
-  List<DropdownMenuEntry<dynamic>> rateEntries = [
-    DropdownMenuEntry(value: 15, label: "15 Minutes"),
-    DropdownMenuEntry(value: 30, label: "30 Minutes"),
-    DropdownMenuEntry(value: 60, label: "1 Hour"),
-    DropdownMenuEntry(value: 180, label: "3 Hours"),
-    DropdownMenuEntry(value: 480, label: "8 Hours"),
-    DropdownMenuEntry(value: 1440, label: "Daily"),    
-  ];
-  bool isMotivation = true;
-  bool isSelfLove = true;
-  bool isConfidence = true;
-  bool isPeace = true;
-  bool isSuccess = true;
-  
-  Future loadSettings() async {
-    
+class NotificationSettingsModel {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  bool isNotificationsEnabled;
+  int notificationRate;
+  bool isFavoritesOnly;
+
+  bool isMotivation;
+  bool isSelfLove;
+  bool isConfidence;
+  bool isPeace;
+  bool isSuccess;
+
+  NotificationSettingsModel({
+    this.isNotificationsEnabled = true,
+    this.notificationRate = 60,
+    this.isFavoritesOnly = false,
+    this.isMotivation = true,
+    this.isSelfLove = true,
+    this.isConfidence = true,
+    this.isPeace = true,
+    this.isSuccess = true,
+  });
+
+  Future<void> loadSettings(String uid) async {
+    final doc = await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('settings')
+        .doc('notifications')
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+
+      isNotificationsEnabled =
+          data['isNotificationsEnabled'] ?? true;
+
+      notificationRate = data['notificationRate'] ?? 60;
+
+      isFavoritesOnly = data['isFavoritesOnly'] ?? false;
+
+      isMotivation = data['isMotivation'] ?? true;
+      isSelfLove = data['isSelfLove'] ?? true;
+      isConfidence = data['isConfidence'] ?? true;
+      isPeace = data['isPeace'] ?? true;
+      isSuccess = data['isSuccess'] ?? true;
+    }
+  }
+
+  Future<void> saveSettings(String uid) async {
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('settings')
+        .doc('notifications')
+        .set({
+      'isNotificationsEnabled': isNotificationsEnabled,
+      'notificationRate': notificationRate,
+      'isFavoritesOnly': isFavoritesOnly,
+      'isMotivation': isMotivation,
+      'isSelfLove': isSelfLove,
+      'isConfidence': isConfidence,
+      'isPeace': isPeace,
+      'isSuccess': isSuccess,
+    });
   }
 }

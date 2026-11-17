@@ -146,20 +146,21 @@ void main() {
       final model = Alarm(
         alarmOn: false,
         alarmTime: const TimeOfDay(hour: 8, minute: 0),
+        alarmSound:  'alarm.wav',
         notificationsOn: false,
         alarmName: 'Original',
       );
       final alarm = AlarmPresenter(alarm: model);
       const newTime = TimeOfDay(hour: 9, minute: 30);
       for (final invalidName in ['', '   ', '\t\n']) {
-        expect(alarm.updateAlarm(true, newTime, true, invalidName), false);
+        expect(alarm.updateAlarm(true, newTime, 'alarm.wav', true, invalidName), false);
         expect(model.alarmOn, false);
         expect(model.alarmTime, const TimeOfDay(hour: 8, minute: 0));
         expect(model.notificationsOn, false);
         expect(model.alarmName, 'Original');
         expect(alarm.error, 'Enter an alarm name.');
       }
-      expect(alarm.updateAlarm(true, newTime, true, '  Morning class  '), true);
+      expect(alarm.updateAlarm(true, newTime, 'alarm.wav', true, '  Morning class  '), true);
       expect(model.alarmOn, true);
       expect(model.alarmTime, newTime);
       expect(model.notificationsOn, true);
@@ -171,6 +172,7 @@ void main() {
         alarm.updateAlarm(
           false,
           const TimeOfDay(hour: 7, minute: 0),
+           'alarm.wav',
           false,
           '',
         ),
