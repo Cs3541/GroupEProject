@@ -1,4 +1,4 @@
-# stress_free
+# stress_free app
 
 A new Flutter project.
 
