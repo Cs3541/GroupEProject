@@ -64,7 +64,7 @@ flutter:
 
 
   assets:
-    - assets/audio/alarm.wav
+    - assets/audio/alarm_sounds/
     - assets/affirmation.json
     
   fonts:

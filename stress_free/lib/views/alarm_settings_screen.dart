@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
-
 import '../presenters/alarm_presenter.dart';
+import '../presenters/sleep_session_presenter.dart';
 
 class AlarmSettingsScreen extends StatefulWidget {
-  const AlarmSettingsScreen({super.key, required AlarmPresenter alarmPresenter})
-    : _alarmPresenter = alarmPresenter;
+  const AlarmSettingsScreen({
+    super.key, 
+    required AlarmPresenter alarmPresenter, 
+    required SleepSessionPresenter sleepPresenter})
+    : _alarmPresenter = alarmPresenter,
+      _sleepPresenter = sleepPresenter;
 
   final AlarmPresenter _alarmPresenter;
+  final SleepSessionPresenter _sleepPresenter;
 
   @override
   State<AlarmSettingsScreen> createState() => _AlarmSettingsScreenState();
@@ -16,15 +21,18 @@ class _AlarmSettingsScreenState extends State<AlarmSettingsScreen> {
   // Stores user inputs until Save succeeds.
   late bool _alarmOn;
   late TimeOfDay _alarmTime;
+  late String _alarmSound;
   late bool _notificationsOn;
   late String _alarmName;
   String? _nameError;
+
 
   @override
   void initState() {
     super.initState();
     _alarmOn = widget._alarmPresenter.alarmOn;
     _alarmTime = widget._alarmPresenter.alarmTime;
+    _alarmSound = widget._alarmPresenter.alarmSound;
     _notificationsOn = widget._alarmPresenter.notificationsOn;
     _alarmName = widget._alarmPresenter.alarmName;
   }
@@ -33,6 +41,7 @@ class _AlarmSettingsScreenState extends State<AlarmSettingsScreen> {
     if (widget._alarmPresenter.updateAlarm(
       _alarmOn,
       _alarmTime,
+      _alarmSound,
       _notificationsOn,
       _alarmName,
     )) {
@@ -75,6 +84,27 @@ class _AlarmSettingsScreenState extends State<AlarmSettingsScreen> {
                 child: Text(_alarmTime.format(context)),
               ),
             ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Alarm Sound:'),
+              DropdownButton<String>(
+                value: _alarmSound,
+                hint: const Text('Select a sound'),
+                items: widget._alarmPresenter.alarmSounds.entries.map((entry) {
+                  return DropdownMenuItem(value: entry.value, child: Text(entry.key));
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {  
+                    setState(() {
+                      _alarmSound = value;
+                    });
+                  }
+                } 
+              )
+            ]
+  
           ),
           Row(
             // Bedtime Notifications

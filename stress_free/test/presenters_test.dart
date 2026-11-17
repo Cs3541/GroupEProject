@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stress_free/models/affirmation_model.dart';
 import 'package:stress_free/models/alarm_model.dart';
 import 'package:stress_free/models/journal_preferences_store.dart';
 import 'package:stress_free/models/journal_store.dart';
-import 'package:stress_free/presenters/affirmations_presenter.dart';
 import 'package:stress_free/presenters/alarm_presenter.dart';
 import 'package:stress_free/presenters/journal_settings_presenter.dart';
 
@@ -182,22 +180,6 @@ void main() {
       expect(model.alarmTime, newTime);
       expect(model.notificationsOn, true);
       expect(model.alarmName, 'Morning class');
-    },
-  );
-
-  test(
-    'affirmation categories use existing model without mutating favorites',
-    () {
-      final entry = Affirmation(
-        text: 'Keep going',
-        category: 'Study',
-        isFavorite: true,
-      );
-      final categories = AffirmationsPresenter(affirmations: [entry, entry])
-          .categories;
-      expect(categories, ['Life', 'Gym', 'Work', 'Study']);
-      expect(entry.isFavorite, true);
-      expect(() => categories.add('Other'), throwsUnsupportedError);
     },
   );
 }

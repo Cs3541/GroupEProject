@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Each option corresponds to a bundled font that also works offline.
+// Each option corresponds to a bundled font that also works offline.
 enum JournalFont {
   roboto('Roboto', 'JournalRoboto'),
   serif('Serif', 'JournalSerif');
