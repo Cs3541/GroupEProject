@@ -68,6 +68,9 @@ flutter:
     - assets/affirmation.json
     - assets/audio/ambient/rain.wav
     - assets/audio/ambient/ocean.mp3
+    - assets/audio/ambient/fire.mp3
+    - assets/audio/ambient/whitenoise.mp3
+    - assets/audio/ambient/birds.mp3
     
   fonts:
     - family: JournalRoboto
