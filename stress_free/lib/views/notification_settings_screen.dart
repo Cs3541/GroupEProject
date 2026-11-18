@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/notification_settings_model.dart';
-import '../presenters/notification_presenter.dart';
+import '../presenters/notification_settings_presenter.dart';
+import '../models/affirmation_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AffirmationSettingsScreen extends StatefulWidget {
   const AffirmationSettingsScreen({super.key});
@@ -133,6 +135,10 @@ class _AffirmationSettingsScreenState
               actions: [
                 TextButton(
                   onPressed: () {
+                    if (!_hasSelectedCategory()) {
+                      _showWarning('At least one category must be selected.');
+                      return;
+                    }
                     Navigator.pop(dialogContext);
                     presenter.saveSettings();
                   },
@@ -143,6 +149,33 @@ class _AffirmationSettingsScreenState
           },
         );
       },
+    );
+  }
+
+  bool _hasSelectedCategory() {
+    return model.isMotivation ||
+        model.isSelfLove ||
+        model.isConfidence ||
+        model.isPeace ||
+        model.isSuccess;
+  }
+
+  Future<bool> _hasFavorites() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final affirmations = await Affirmation.loadAffirmations(userId);
+    return affirmations.any(
+      (affirmation) => affirmation.isFavorite,
+    );
+  }
+
+  void _showWarning(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -229,7 +262,21 @@ class _AffirmationSettingsScreenState
               const Text('Only Send Favorites'),
               Switch(
                 value: model.isFavoritesOnly,
-                onChanged: (value) {
+                onChanged: (value) async {
+                  if (value) {
+                    try {
+                      final hasFavorites = await _hasFavorites();
+                      if (!mounted) return;
+                      if (!hasFavorites) {
+                        _showWarning('At least one affirmation must be marked as favorite');
+                        return;
+                      }
+                    } catch (e) {
+                      if (!mounted) return;
+                        _showWarning('Unable to check your favorites. Please try again.');
+                      return;
+                    }
+                  }
                   _updateSettings(() {
                     model.isFavoritesOnly = value;
                   });
