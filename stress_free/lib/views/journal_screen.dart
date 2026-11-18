@@ -70,10 +70,9 @@ class _JournalScreenState extends State<JournalScreen> {
 
       if (!mounted) return;
 
-      setState(() {
-        _entries = entries;
-        _loading = false;
-      });
+      // Entries belong to JournalSearchPresenter, not a writable screen field.
+      _search.updateEntries(entries);
+      setState(() => _loading = false);
 
       if (_settings.message != null) {
         _showMessage(_settings.message!);
@@ -90,7 +89,9 @@ class _JournalScreenState extends State<JournalScreen> {
     }
   }
 
-  void _renderSearch() => setState(() {});
+  void _renderSearch() {
+    if (mounted) setState(() {});
+  }
 
   Future<void> _openSettings() async {
     if (widget.onOpenSettings != null) {
@@ -209,8 +210,7 @@ class _JournalScreenState extends State<JournalScreen> {
   // Select a date for searching journals.
   Future<void> _pickSearchDate() async {
     final initialDate =
-        DateTime.tryParse(_searchController.text.trim()) ??
-        DateTime.now();
+        DateTime.tryParse(_dateController.text.trim()) ?? DateTime.now();
 
     final selectedDate = await _showJournalCalendar(
       initialDate: initialDate,
@@ -219,10 +219,7 @@ class _JournalScreenState extends State<JournalScreen> {
 
     if (!mounted || selectedDate == null) return;
 
-    final year = pickedDate.year.toString().padLeft(4, '0');
-    final month = pickedDate.month.toString().padLeft(2, '0');
-    final day = pickedDate.day.toString().padLeft(2, '0');
-    setState(() => _dateController.text = '$year-$month-$day');
+    _dateController.text = _formatDate(selectedDate);
   }
 
   
@@ -232,9 +229,9 @@ class _JournalScreenState extends State<JournalScreen> {
   Future<void> _viewByDate() async {
     if (_loading || _loadFailed || _searchBusy) return;
 
-    if (_searchController.text.trim().isEmpty) return;
+    if (_dateController.text.trim().isEmpty) return;
 
-    final date = validatedDate(_searchController.text);
+    final date = validatedDate(_dateController.text);
 
     if (date == null) {
       _showMessage('Enter a valid date as YYYY-MM-DD.');
@@ -288,7 +285,8 @@ class _JournalScreenState extends State<JournalScreen> {
 
       if (!mounted) return;
 
-      setState(() => _entries[date] = '');
+      // JournalSearchPresenter exposes a read-only entries map.
+      _search.updateEntries({..._entries, date: ''});
 
       await _openEditor(date);
     } finally {
@@ -353,8 +351,8 @@ class _JournalScreenState extends State<JournalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dates = _entries.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    // The presenter handles keyword filtering and newest-first sorting.
+    final dates = _search.visibleDates;
 
     return Scaffold(
       appBar: AppBar(
@@ -445,22 +443,49 @@ class _JournalScreenState extends State<JournalScreen> {
                   child: const Text('View'),
                 ),
 
+                const SizedBox(height: 16),
+
+                // Search journal contents using the merged search presenter.
+                TextField(
+                  controller: _keywordController,
+                  onChanged: _search.search,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: 'Search journal content',
+                    hintText: 'Enter a keyword or phrase',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _search.searching
+                        ? IconButton(
+                            tooltip: 'Clear keyword search',
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _keywordController.clear();
+                              _search.search('');
+                            },
+                          )
+                        : null,
+                  ),
+                ),
+
                 const SizedBox(height: 24),
 
                 // Recent entries.
                 Text(
-                  _search.searching ? 'Search results' : 'All entries',
+                  _search.searching ? 'Search results' : 'Recent entries',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
 
                 const SizedBox(height: 8),
 
                 if (dates.isEmpty)
-                  const Text(
-                    'No journal entries yet. Tap + to start writing.',
+                  Text(
+                    _search.searching
+                        ? 'No matching journal entries.'
+                        : 'No journal entries yet. Tap + to start writing.',
                   )
                 else
-                  ...dates.take(10).map(
+                  ...dates.take(_search.searching ? dates.length : 10).map(
                     (date) => Card(
                       child: ListTile(
                         title: Text(
@@ -522,8 +547,9 @@ class _JournalScreenState extends State<JournalScreen> {
           // New Entry button.
           FloatingActionButton.extended(
             heroTag: 'journal_new_entry',
-            onPressed:
-                _loading || _loadFailed ? null : _createNew,
+            onPressed: _loading || _loadFailed || _searchBusy
+                ? null
+                : _createNew,
             icon: const Icon(Icons.add),
             label: const Text('New Entry'),
           ),
