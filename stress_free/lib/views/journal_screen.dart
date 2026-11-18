@@ -6,12 +6,15 @@ import 'package:stress_free/views/homescreen.dart';
 
 import '../models/journal_preferences_store.dart';
 import '../models/journal_store.dart';
+import '../presenters/journal_search_presenter.dart';
 import '../presenters/journal_settings_presenter.dart';
 import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
 import 'stress_statistics_screen.dart';
 
 class JournalScreen extends StatefulWidget {
+  /// navigate to this screen from Home.
+
   const JournalScreen({
     super.key,
     this.onOpenSettings,
@@ -31,10 +34,10 @@ class _JournalScreenState extends State<JournalScreen> {
   late final JournalStore _store;
   late final JournalPreferencesStore _preferences;
   late final JournalSettingsPresenter _settings;
-
-  final TextEditingController _searchController = TextEditingController();
-  Map<String, String> _entries = {};
-
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _keywordController = TextEditingController();
+  final JournalSearchPresenter _search = JournalSearchPresenter();
+  Map<String, String> get _entries => _search.entries;
   bool _loading = true;
   bool _loadFailed = false;
   bool _searchBusy = false;
@@ -42,7 +45,7 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   void initState() {
     super.initState();
-
+    _search.addListener(_renderSearch);
     _store = widget.store ?? JournalStore();
     _preferences = widget.preferences ?? JournalPreferencesStore();
 
@@ -87,7 +90,8 @@ class _JournalScreenState extends State<JournalScreen> {
     }
   }
 
-  // Open journal settings.
+  void _renderSearch() => setState(() {});
+
   Future<void> _openSettings() async {
     if (widget.onOpenSettings != null) {
       await widget.onOpenSettings!();
@@ -215,7 +219,10 @@ class _JournalScreenState extends State<JournalScreen> {
 
     if (!mounted || selectedDate == null) return;
 
-    _searchController.text = _formatDate(selectedDate);
+    final year = pickedDate.year.toString().padLeft(4, '0');
+    final month = pickedDate.month.toString().padLeft(2, '0');
+    final day = pickedDate.day.toString().padLeft(2, '0');
+    setState(() => _dateController.text = '$year-$month-$day');
   }
 
   
@@ -332,7 +339,10 @@ class _JournalScreenState extends State<JournalScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _dateController.dispose();
+    _keywordController.dispose();
+    _search.removeListener(_renderSearch);
+    _search.dispose();
     _settings.dispose();
     super.dispose();
   }
@@ -352,8 +362,6 @@ class _JournalScreenState extends State<JournalScreen> {
         title: const Text('Reflective Journaling'),
         centerTitle: true,
         leadingWidth: 100,
-
-        // Back to Home screen.
         leading: TextButton.icon(
           onPressed: () {
             Navigator.pushReplacement(
@@ -414,7 +422,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 const SizedBox(height: 8),
 
                 TextField(
-                  controller: _searchController,
+                  controller: _dateController,
                   readOnly: true,
                   onTap: _searchBusy ? null : _pickSearchDate,
                   decoration: InputDecoration(
@@ -441,7 +449,7 @@ class _JournalScreenState extends State<JournalScreen> {
 
                 // Recent entries.
                 Text(
-                  'Recent entries',
+                  _search.searching ? 'Search results' : 'All entries',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
 
@@ -489,7 +497,6 @@ class _JournalScreenState extends State<JournalScreen> {
                       ),
                     ),
                   ),
-
                 const SizedBox(height: 24),
 
                 // Favorite journals placeholder.

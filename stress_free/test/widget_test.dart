@@ -151,11 +151,17 @@ void main() {
   ) async {
     final memory = MemoryPreferences();
     await openJournals(tester, memory);
-    await tester.enterText(find.byType(TextField), '2026-02-30');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Entry date'),
+      '2026-02-30',
+    );
     await tester.tap(find.text('View'));
     await tester.pumpAndSettle();
     expect(find.text('Enter a valid date as YYYY-MM-DD.'), findsOneWidget);
-    await tester.enterText(find.byType(TextField), '2026-10-27');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Entry date'),
+      '2026-10-27',
+    );
     await tester.tap(find.text('View'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).last, 'A new reflection');
