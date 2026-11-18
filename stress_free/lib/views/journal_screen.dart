@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../models/journal_preferences_store.dart';
 import '../models/journal_store.dart';
+import '../presenters/journal_search_presenter.dart';
 import '../presenters/journal_settings_presenter.dart';
 import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
@@ -13,7 +14,7 @@ import 'homescreen.dart';
 
 class JournalScreen extends StatefulWidget {
   /// navigate to this screen from Home.
- 
+
   const JournalScreen({
     super.key,
     this.onOpenSettings,
@@ -33,8 +34,10 @@ class _JournalScreenState extends State<JournalScreen> {
   late final JournalStore _store;
   late final JournalPreferencesStore _preferences;
   late final JournalSettingsPresenter _settings;
-  final TextEditingController _searchController = TextEditingController();
-  Map<String, String> _entries = {};
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _keywordController = TextEditingController();
+  final JournalSearchPresenter _search = JournalSearchPresenter();
+  Map<String, String> get _entries => _search.entries;
   bool _loading = true;
   bool _loadFailed = false;
   bool _searchBusy = false;
@@ -42,6 +45,7 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   void initState() {
     super.initState();
+    _search.addListener(_renderSearch);
     _store = widget.store ?? JournalStore();
     _preferences = widget.preferences ?? JournalPreferencesStore();
     _settings = JournalSettingsPresenter(
@@ -60,10 +64,8 @@ class _JournalScreenState extends State<JournalScreen> {
       final entries = await _store.loadAll();
       await _settings.loadFont();
       if (!mounted) return;
-      setState(() {
-        _entries = entries;
-        _loading = false;
-      });
+      _search.updateEntries(entries);
+      setState(() => _loading = false);
       if (_settings.message != null) _showMessage(_settings.message!);
     } catch (_) {
       if (!mounted) return;
@@ -73,6 +75,8 @@ class _JournalScreenState extends State<JournalScreen> {
       });
     }
   }
+
+  void _renderSearch() => setState(() {});
 
   Future<void> _openSettings() async {
     if (widget.onOpenSettings != null) {
@@ -137,7 +141,7 @@ class _JournalScreenState extends State<JournalScreen> {
   // Opens an iOS-style scrolling date picker (year / month / day).
   Future<void> _pickSearchDate() async {
     final initialDate =
-        DateTime.tryParse(_searchController.text.trim()) ?? DateTime.now();
+        DateTime.tryParse(_dateController.text.trim()) ?? DateTime.now();
     DateTime selectedDate = initialDate;
 
     final pickedDate = await showModalBottomSheet<DateTime>(
@@ -157,7 +161,8 @@ class _JournalScreenState extends State<JournalScreen> {
                   ),
                   const Text('Select a date'),
                   TextButton(
-                    onPressed: () => Navigator.of(sheetContext).pop(selectedDate),
+                    onPressed: () =>
+                        Navigator.of(sheetContext).pop(selectedDate),
                     child: const Text('Done'),
                   ),
                 ],
@@ -183,15 +188,15 @@ class _JournalScreenState extends State<JournalScreen> {
     final year = pickedDate.year.toString().padLeft(4, '0');
     final month = pickedDate.month.toString().padLeft(2, '0');
     final day = pickedDate.day.toString().padLeft(2, '0');
-    setState(() => _searchController.text = '$year-$month-$day');
+    setState(() => _dateController.text = '$year-$month-$day');
   }
 
   Future<void> _viewByDate() async {
     // An empty search does nothing; prevent multiple dialogs from overlapping.
     if (_loading || _loadFailed || _searchBusy) return;
-    if (_searchController.text.trim().isEmpty) return;
+    if (_dateController.text.trim().isEmpty) return;
 
-    final date = validatedDate(_searchController.text);
+    final date = validatedDate(_dateController.text);
     if (date == null) {
       _showMessage('Enter a valid date as YYYY-MM-DD.');
       return;
@@ -238,7 +243,7 @@ class _JournalScreenState extends State<JournalScreen> {
       }
       if (!mounted) return;
 
-      setState(() => _entries[date] = '');
+      _search.updateEntries({..._entries, date: ''});
       await _openEditor(date);
     } finally {
       if (mounted) setState(() => _searchBusy = false);
@@ -253,21 +258,24 @@ class _JournalScreenState extends State<JournalScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _dateController.dispose();
+    _keywordController.dispose();
+    _search.removeListener(_renderSearch);
+    _search.dispose();
     _settings.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final dates = _entries.keys.toList()..sort((a, b) => b.compareTo(a));
+    final dates = _search.visibleDates;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 0, 203, 182),
         title: const Text('Reflective Journaling'),
         centerTitle: true,
-        leadingWidth: 100, 
+        leadingWidth: 100,
         leading: TextButton.icon(
           onPressed: () {
             Navigator.pushReplacement(
@@ -276,11 +284,11 @@ class _JournalScreenState extends State<JournalScreen> {
             );
           },
           icon: const Icon(Icons.arrow_back, size: 18),
-          label: const Text('Home', style: TextStyle(color: Colors.black),),
+          label: const Text('Home', style: TextStyle(color: Colors.black)),
           style: TextButton.styleFrom(
             padding: const EdgeInsets.only(left: 8.0),
             alignment: Alignment.centerLeft,
-            iconColor: Colors.black
+            iconColor: Colors.black,
           ),
         ),
         actions: [
@@ -315,7 +323,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 const Text('Find an entry by date'),
                 const SizedBox(height: 8),
                 TextField(
-                  controller: _searchController,
+                  controller: _dateController,
                   readOnly: true,
                   onTap: _searchBusy ? null : _pickSearchDate,
                   decoration: InputDecoration(
@@ -335,47 +343,67 @@ class _JournalScreenState extends State<JournalScreen> {
                   child: const Text('View'),
                 ),
                 const SizedBox(height: 24),
+                TextField(
+                  controller: _keywordController,
+                  onChanged: _search.search,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: 'Search journal content',
+                    hintText: 'Enter a keyword or phrase',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _keywordController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Clear search',
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _keywordController.clear();
+                              _search.search('');
+                            },
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Text(
-                  'Recent entries',
+                  _search.searching ? 'Search results' : 'All entries',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 if (dates.isEmpty)
-                  const Text('No journal entries yet. Tap + to start writing.')
+                  Text(
+                    _search.searching
+                        ? 'No journal entries match your search.'
+                        : 'No journal entries yet. Tap + to start writing.',
+                  )
                 else
-                  ...dates
-                      .take(10)
-                      .map(
-                        (date) => Card(
-                          child: ListTile(
-                            title: Text(
-                              date,
-                              style: TextStyle(
-                                fontFamily: _settings.font.family,
-                              ),
-                            ),
-                            subtitle: Text(
-                              _entries[date]!.trim().isEmpty
-                                  ? '(Empty entry)'
-                                  : _entries[date]!.replaceAll('\n', ' '),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: _settings.font.family,
-                              ),
-                            ),
-                            trailing: IconButton(
-                              tooltip: 'Delete entry for $date',
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                              onPressed: () => _confirmDeleteEntry(date),
-                            ),
-                            onTap: () => _openEditor(date),
-                          ),
+                  ...dates.map(
+                    (date) => Card(
+                      child: ListTile(
+                        title: Text(
+                          date,
+                          style: TextStyle(fontFamily: _settings.font.family),
                         ),
+                        subtitle: Text(
+                          _entries[date]!.trim().isEmpty
+                              ? '(Empty entry)'
+                              : _entries[date]!.replaceAll('\n', ' '),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontFamily: _settings.font.family),
+                        ),
+                        trailing: IconButton(
+                          tooltip: 'Delete entry for $date',
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                          onPressed: () => _confirmDeleteEntry(date),
+                        ),
+                        onTap: () => _openEditor(date),
                       ),
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 Text(
                   'Favorite journals',
@@ -411,5 +439,4 @@ class _JournalScreenState extends State<JournalScreen> {
       ),
     );
   }
-
 }

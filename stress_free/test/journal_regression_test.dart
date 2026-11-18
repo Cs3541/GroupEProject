@@ -43,7 +43,9 @@ void main() {
       expect(find.byType(TextField), findsNothing);
       expect(
         tester
-            .widget<FloatingActionButton>(find.byType(FloatingActionButton))
+            .widget<FloatingActionButton>(
+              find.widgetWithText(FloatingActionButton, 'New Entry'),
+            )
             .onPressed,
         isNull,
       );
