@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:stress_free/models/auth_service.dart';
 import 'package:stress_free/views/auth_gate.dart';
-
 import 'firebase_options.dart';
 
 Future<void> main() async {

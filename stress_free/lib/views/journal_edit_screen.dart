@@ -43,16 +43,54 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
   late final TextEditingController _entryController;
   bool _saving = false;
   int _stressRating = 5;
+  bool _loadingRating = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _dateController = TextEditingController(text: widget.initialDate);
-    _entryController = TextEditingController(text: widget.initialText);
+  
+@override
+void initState() {
+  super.initState();
+
+  _dateController = TextEditingController(
+    text: widget.initialDate,
+  );
+
+  _entryController = TextEditingController(
+    text: widget.initialText,
+  );
+
+  _loadStressRating();
+}
+
+Future<void> _loadStressRating() async {
+  try {
+    final rating = await widget.store.loadStressRating(
+      widget.initialDate,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _stressRating = rating ?? 5;
+      _loadingRating = false;
+    });
+  } catch (error) {
+    if (!mounted) return;
+
+    setState(() {
+      _loadingRating = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not load stress rating: $error'),
+      ),
+    );
   }
+}
+
 
   Future<void> _saveAndGoBack() async {
-    if (_saving) return;
+    if (_saving || _loadingRating) return;
 
     final date = validatedDate(_dateController.text);
     if (date == null) {
@@ -64,7 +102,11 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
 
     setState(() => _saving = true);
     try {
-      await widget.store.saveEntry(date, _entryController.text);
+      await widget.store.saveEntry(
+       date,
+      _entryController.text,
+      stressRating: _stressRating,
+      );
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
