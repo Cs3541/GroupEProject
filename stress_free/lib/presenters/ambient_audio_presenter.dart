@@ -4,6 +4,9 @@ class AmbientAudioPresenter {
   final List<AmbientAudio> _audioList = [
     AmbientAudio(name: 'Rain', filePath: 'audio/ambient/rain.wav'),
     AmbientAudio(name: 'Ocean', filePath: 'audio/ambient/ocean.mp3'),
+    AmbientAudio(name:'Birds', filePath: 'audio/ambient/birds.mp3'),
+    AmbientAudio(name:'Fire', filePath: 'audio/ambient/fire.mp3'),
+    AmbientAudio(name:'White Noise', filePath: 'audio/ambient/whitenoise.mp3')
     // Add more ambient audio options here
   ];
   late AmbientAudio _selectedAudio = _audioList[0];
