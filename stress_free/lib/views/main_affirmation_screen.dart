@@ -3,6 +3,7 @@ import 'package:stress_free/views/notification_settings_screen.dart';
 import '../presenters/affirmation_presenter.dart';
 import '../models/affirmation_model.dart';
 import '../views/homescreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MainAffirmationScreen extends StatefulWidget {
   const MainAffirmationScreen({super.key});
@@ -26,7 +27,9 @@ class _MainAffirmationScreenState extends State<MainAffirmationScreen> {
     _loadAffirmations();
   }
     Future<void> _loadAffirmations() async {
-    final affirmations = await _presenter.loadAffirmations();
+      final userId = FirebaseAuth.instance.currentUser!.uid;
+      final affirmations = await _presenter.loadAffirmations(userId);
+      if (!mounted) return;
       setState(() {
         _affirmations = affirmations;
         _isLoading = false;
@@ -115,10 +118,24 @@ Widget build(BuildContext context) {
                 return SelectableText( // Allows users to select affirmation and select it as a favorite
                   affirmation.text,
                   textAlign: TextAlign.center,
-                  onTap: () {
+                  onTap: () async {
                     setState(() {
                       affirmation.isFavorite = !affirmation.isFavorite;
                     });
+                    final userId = FirebaseAuth.instance.currentUser!.uid;
+                    try {
+                      await _presenter.toggleFavorite(userId, affirmation,);
+                    } catch (e) {
+                      if (!mounted) return;
+                      setState(() {
+                        affirmation.isFavorite = !affirmation.isFavorite;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Unable to update favorite.'),
+                        ),
+                      );
+                    }
                   },
                   style: TextStyle(
                     fontSize: 18,
