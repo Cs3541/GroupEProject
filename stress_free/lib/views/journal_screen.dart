@@ -154,7 +154,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     onPressed: () => Navigator.of(sheetContext).pop(),
                     child: const Text('Cancel'),
                   ),
-                  const Text('Select aaaaaa date'),
+                  const Text('Select a date'),
                   TextButton(
                     onPressed: () => Navigator.of(sheetContext).pop(selectedDate),
                     child: const Text('Done'),

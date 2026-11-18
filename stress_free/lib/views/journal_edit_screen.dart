@@ -64,7 +64,11 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
 
     setState(() => _saving = true);
     try {
-      await widget.store.saveEntry(date, _entryController.text);
+      await widget.store.saveEntry(
+       date,
+      _entryController.text,
+      stressRating: _stressRating,
+      );
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
