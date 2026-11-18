@@ -244,11 +244,53 @@ class _JournalScreenState extends State<JournalScreen> {
     }
   }
 
-  void _createNew() {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    // One entry per date: if today's entry already exists, reopen it.
-    _openEditor(today);
+  
+Future<void> _createNew() async {
+  if (_loading || _loadFailed) return;
+
+  final today = DateTime.now();
+
+  String formatDate(DateTime date) {
+    final year = date.year.toString().padLeft(4, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+
+    return '$year-$month-$day';
   }
+
+  final todayString = formatDate(today);
+
+  // If today's journal does not exist, create a new one.
+  if (!_entries.containsKey(todayString)) {
+    await _openEditor(todayString);
+    return;
+  }
+
+  // Today's journal already exists. Ask for another date.
+  final selectedDate = await showDatePicker(
+    context: context,
+    initialDate: today,
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2100),
+    helpText: 'Select a date for your new journal',
+  );
+
+  if (!mounted || selectedDate == null) return;
+
+  final dateString = formatDate(selectedDate);
+
+  // Prevent overwriting an existing journal.
+  if (_entries.containsKey(dateString)) {
+    _showMessage(
+      'A journal already exists for this date. Please select another date.',
+    );
+    return;
+  }
+
+  // Open a new, empty journal editor.
+  await _openEditor(dateString);
+}
+
 
   @override
   void dispose() {
