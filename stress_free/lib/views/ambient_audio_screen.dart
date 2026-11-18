@@ -110,39 +110,45 @@ class _AmbientAudioScreenState extends State<AmbientAudioScreen>{
                   });
                 },
               ),
+
               
               Spacer(),
 
-              Stack(
-                alignment: Alignment.center,
-                children: [ 
-                  Spacer(),
-                  IconButton(
-                      onPressed: _toggleAudio,
-                      icon: Icon(_isPlaying ? Icons.stop_circle_outlined : Icons.play_circle_outline, size: 50),
-                      ),
-                  Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children:[
-                    Icon(Icons.volume_down),
-                  Slider(
-                    value: _audioPlayer.volume,
-                    onChanged: (value) {
-                      setState(() {
-                        _audioPlayer.setVolume(value);
-                      });
-                    },
-                    min: 0.0,
-                    max: 1.0,
-                    divisions: 5,
-                    label: 'Volume',
-                  ),
-                  Icon(Icons.volume_up),
-                  ]
-                  )
-                ],
-              ),
+              Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    IconButton(
+      onPressed: _toggleAudio,
+      icon: Icon(
+        _isPlaying
+            ? Icons.stop_circle_outlined
+            : Icons.play_circle_outline,
+        size: 50,
+      ),
+    ),
+
+    Row(
+      children: [
+        const Icon(Icons.volume_down),
+        Expanded(
+          child: Slider(
+            value: _audioPlayer.volume,
+            onChanged: (value) {
+              setState(() {
+                _audioPlayer.setVolume(value);
+              });
+            },
+            min: 0.0,
+            max: 1.0,
+            divisions: 5,
+            label: 'Volume',
+          ),
+        ),
+        const Icon(Icons.volume_up),
+      ],
+    ),
+  ],
+),
 
               Slider(
                 value: _position.inSeconds.toDouble(),
