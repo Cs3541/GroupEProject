@@ -1,7 +1,9 @@
+
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:stress_free/views/homescreen.dart';
+
 import '../models/journal_preferences_store.dart';
 import '../models/journal_store.dart';
 import '../presenters/journal_settings_presenter.dart';
@@ -9,10 +11,7 @@ import 'journal_edit_screen.dart';
 import 'journal_settings_screen.dart';
 import 'stress_statistics_screen.dart';
 
-
 class JournalScreen extends StatefulWidget {
-  /// navigate to this screen from Home.
- 
   const JournalScreen({
     super.key,
     this.onOpenSettings,
@@ -32,8 +31,10 @@ class _JournalScreenState extends State<JournalScreen> {
   late final JournalStore _store;
   late final JournalPreferencesStore _preferences;
   late final JournalSettingsPresenter _settings;
+
   final TextEditingController _searchController = TextEditingController();
   Map<String, String> _entries = {};
+
   bool _loading = true;
   bool _loadFailed = false;
   bool _searchBusy = false;
@@ -41,31 +42,44 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   void initState() {
     super.initState();
+
     _store = widget.store ?? JournalStore();
     _preferences = widget.preferences ?? JournalPreferencesStore();
+
     _settings = JournalSettingsPresenter(
       journals: _store,
       preferences: _preferences,
     );
+
     _refreshEntries();
   }
 
+  // Load all journal entries.
   Future<void> _refreshEntries() async {
     setState(() {
       _loading = true;
       _loadFailed = false;
     });
+
     try {
       final entries = await _store.loadAll();
       await _settings.loadFont();
+
       if (!mounted) return;
+
       setState(() {
         _entries = entries;
         _loading = false;
       });
-      if (_settings.message != null) _showMessage(_settings.message!);
-    } catch (_) {
+
+      if (_settings.message != null) {
+        _showMessage(_settings.message!);
+      }
+    } catch (error) {
+      debugPrint('Could not load journals: $error');
+
       if (!mounted) return;
+
       setState(() {
         _loading = false;
         _loadFailed = true;
@@ -73,6 +87,7 @@ class _JournalScreenState extends State<JournalScreen> {
     }
   }
 
+  // Open journal settings.
   Future<void> _openSettings() async {
     if (widget.onOpenSettings != null) {
       await widget.onOpenSettings!();
@@ -86,27 +101,33 @@ class _JournalScreenState extends State<JournalScreen> {
         ),
       );
     }
+
     if (mounted) await _refreshEntries();
   }
 
+  // Display messages.
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
+  // Delete an existing journal.
   Future<void> _confirmDeleteEntry(String date) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete journal entry?'),
-        content: Text('Are you sure you want to delete the entry for $date?'),
+        content: Text(
+          'Are you sure you want to delete the entry for $date?',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: const Text('Delete'),
           ),
         ],
@@ -114,12 +135,22 @@ class _JournalScreenState extends State<JournalScreen> {
     );
 
     if (confirmed != true || !mounted) return;
-    await _store.deleteEntry(date);
-    if (mounted) await _refreshEntries();
+
+    try {
+      await _store.deleteEntry(date);
+
+      if (mounted) await _refreshEntries();
+    } catch (error) {
+      if (mounted) {
+        _showMessage('Could not delete journal: $error');
+      }
+    }
   }
 
+  // Open the journal editor.
   Future<void> _openEditor(String date) async {
     if (_loading || _loadFailed) return;
+
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) => JournalEditorScreen(
@@ -130,127 +161,16 @@ class _JournalScreenState extends State<JournalScreen> {
         ),
       ),
     );
+
     if (mounted) await _refreshEntries();
   }
 
-  // Opens an iOS-style scrolling date picker (year / month / day).
-  Future<void> _pickSearchDate() async {
-    final initialDate =
-        DateTime.tryParse(_searchController.text.trim()) ?? DateTime.now();
-    DateTime selectedDate = initialDate;
 
-    final pickedDate = await showModalBottomSheet<DateTime>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 340,
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(sheetContext).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                  const Text('Select a date'),
-                  TextButton(
-                    onPressed: () => Navigator.of(sheetContext).pop(selectedDate),
-                    child: const Text('Done'),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.date,
-                  dateOrder: DatePickerDateOrder.ymd,
-                  minimumYear: 1900,
-                  maximumYear: 2100,
-                  initialDateTime: initialDate,
-                  onDateTimeChanged: (date) => selectedDate = date,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  // SHARED CALENDAR FUNCTIONS
+ 
 
-    if (!mounted || pickedDate == null) return;
-
-    final year = pickedDate.year.toString().padLeft(4, '0');
-    final month = pickedDate.month.toString().padLeft(2, '0');
-    final day = pickedDate.day.toString().padLeft(2, '0');
-    setState(() => _searchController.text = '$year-$month-$day');
-  }
-
-  Future<void> _viewByDate() async {
-    // An empty search does nothing; prevent multiple dialogs from overlapping.
-    if (_loading || _loadFailed || _searchBusy) return;
-    if (_searchController.text.trim().isEmpty) return;
-
-    final date = validatedDate(_searchController.text);
-    if (date == null) {
-      _showMessage('Enter a valid date as YYYY-MM-DD.');
-      return;
-    }
-
-    // Open an existing journal without asking the user to create one.
-    if (_entries.containsKey(date)) {
-      await _openEditor(date);
-      return;
-    }
-
-    // If the date is missing, ask before writing anything to local storage.
-    setState(() => _searchBusy = true);
-    try {
-      final shouldCreate = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('No journal found'),
-          content: Text(
-            'No journal exists for $date. Would you like to create a new journal?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Yes, create'),
-            ),
-          ],
-        ),
-      );
-
-      // Cancel, dismiss, or close the page: no journal is created.
-      if (!mounted || shouldCreate != true) return;
-
-      try {
-        // Persist the empty entry before opening the editor.
-        await _store.saveEntry(date, '');
-      } catch (error) {
-        if (mounted) _showMessage('Could not create journal: $error');
-        return;
-      }
-      if (!mounted) return;
-
-      setState(() => _entries[date] = '');
-      await _openEditor(date);
-    } finally {
-      if (mounted) setState(() => _searchBusy = false);
-    }
-  }
-
-  
-Future<void> _createNew() async {
-  if (_loading || _loadFailed) return;
-
-  final today = DateTime.now();
-
-  String formatDate(DateTime date) {
+  // Convert a date into YYYY-MM-DD format.
+  String _formatDate(DateTime date) {
     final year = date.year.toString().padLeft(4, '0');
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
@@ -258,39 +178,157 @@ Future<void> _createNew() async {
     return '$year-$month-$day';
   }
 
-  final todayString = formatDate(today);
+  // Shared calendar used by Search and New Entry.
+  Future<DateTime?> _showJournalCalendar({
+    required DateTime initialDate,
+    required String title,
+  }) {
+    final firstDate = DateTime(1900);
+    final lastDate = DateTime(2100, 12, 31);
 
-  // If today's journal does not exist, create a new one.
-  if (!_entries.containsKey(todayString)) {
-    await _openEditor(todayString);
-    return;
-  }
+    final validInitialDate = initialDate.isBefore(firstDate)
+        ? firstDate
+        : initialDate.isAfter(lastDate)
+            ? lastDate
+            : initialDate;
 
-  // Today's journal already exists. Ask for another date.
-  final selectedDate = await showDatePicker(
-    context: context,
-    initialDate: today,
-    firstDate: DateTime(2000),
-    lastDate: DateTime(2100),
-    helpText: 'Select a date for your new journal',
-  );
-
-  if (!mounted || selectedDate == null) return;
-
-  final dateString = formatDate(selectedDate);
-
-  // Prevent overwriting an existing journal.
-  if (_entries.containsKey(dateString)) {
-    _showMessage(
-      'A journal already exists for this date. Please select another date.',
+    return showDatePicker(
+      context: context,
+      initialDate: validInitialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      initialEntryMode: DatePickerEntryMode.calendar,
+      helpText: title,
     );
-    return;
   }
 
-  // Open a new, empty journal editor.
-  await _openEditor(dateString);
-}
+  // Select a date for searching journals.
+  Future<void> _pickSearchDate() async {
+    final initialDate =
+        DateTime.tryParse(_searchController.text.trim()) ??
+        DateTime.now();
 
+    final selectedDate = await _showJournalCalendar(
+      initialDate: initialDate,
+      title: 'Select Journal Date',
+    );
+
+    if (!mounted || selectedDate == null) return;
+
+    _searchController.text = _formatDate(selectedDate);
+  }
+
+  
+  // SEARCH JOURNALS
+  
+
+  Future<void> _viewByDate() async {
+    if (_loading || _loadFailed || _searchBusy) return;
+
+    if (_searchController.text.trim().isEmpty) return;
+
+    final date = validatedDate(_searchController.text);
+
+    if (date == null) {
+      _showMessage('Enter a valid date as YYYY-MM-DD.');
+      return;
+    }
+
+    // Open journal if it already exists.
+    if (_entries.containsKey(date)) {
+      await _openEditor(date);
+      return;
+    }
+
+    // If no journal exists, ask for confirmation.
+    setState(() => _searchBusy = true);
+
+    try {
+      final shouldCreate = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('No journal found'),
+          content: Text(
+            'No journal exists for $date. '
+            'Would you like to create a new journal?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(true),
+              child: const Text('Yes, create'),
+            ),
+          ],
+        ),
+      );
+
+      // Cancel: do not create anything.
+      if (!mounted || shouldCreate != true) return;
+
+      try {
+        await _store.saveEntry(date, '');
+      } catch (error) {
+        if (mounted) {
+          _showMessage('Could not create journal: $error');
+        }
+        return;
+      }
+
+      if (!mounted) return;
+
+      setState(() => _entries[date] = '');
+
+      await _openEditor(date);
+    } finally {
+      if (mounted) {
+        setState(() => _searchBusy = false);
+      }
+    }
+  }
+
+  
+  // CREATE NEW JOURNAL
+  
+
+  Future<void> _createNew() async {
+    if (_loading || _loadFailed || _searchBusy) return;
+
+    final today = DateTime.now();
+    final todayString = _formatDate(today);
+
+    // If today's journal doesn't exist, open a new one.
+    if (!_entries.containsKey(todayString)) {
+      await _openEditor(todayString);
+      return;
+    }
+
+    // If today's journal exists, use the shared calendar.
+    final selectedDate = await _showJournalCalendar(
+      initialDate: today,
+      title: 'Select a date for your new journal',
+    );
+
+    if (!mounted || selectedDate == null) return;
+
+    final dateString = _formatDate(selectedDate);
+
+    // Prevent opening an existing entry as a new journal.
+    if (_entries.containsKey(dateString)) {
+      _showMessage(
+        'A journal already exists for this date. '
+        'Please select another date.',
+      );
+      return;
+    }
+
+    // Open a new, empty journal editor.
+    await _openEditor(dateString);
+  }
 
   @override
   void dispose() {
@@ -299,31 +337,44 @@ Future<void> _createNew() async {
     super.dispose();
   }
 
+  
+  // JOURNAL SCREEN UI
+ 
+
   @override
   Widget build(BuildContext context) {
-    final dates = _entries.keys.toList()..sort((a, b) => b.compareTo(a));
+    final dates = _entries.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 0, 203, 182),
         title: const Text('Reflective Journaling'),
         centerTitle: true,
-        leadingWidth: 100, 
+        leadingWidth: 100,
+
+        // Back to Home screen.
         leading: TextButton.icon(
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomePage()),
+              MaterialPageRoute(
+                builder: (_) => HomePage(),
+              ),
             );
           },
           icon: const Icon(Icons.arrow_back, size: 18),
-          label: const Text('Home', style: TextStyle(color: Colors.black),),
+          label: const Text(
+            'Home',
+            style: TextStyle(color: Colors.black),
+          ),
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.only(left: 8.0),
+            padding: const EdgeInsets.only(left: 8),
             alignment: Alignment.centerLeft,
-            iconColor: Colors.black
+            iconColor: Colors.black,
           ),
         ),
+
         actions: [
           IconButton(
             tooltip: 'Journal settings',
@@ -332,6 +383,11 @@ Future<void> _createNew() async {
           ),
         ],
       ),
+
+   
+      // JOURNAL BODY
+    
+
       body: _loading || _loadFailed
           ? Center(
               child: _loading
@@ -353,8 +409,10 @@ Future<void> _createNew() async {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                // Search section.
                 const Text('Find an entry by date'),
                 const SizedBox(height: 8),
+
                 TextField(
                   controller: _searchController,
                   readOnly: true,
@@ -366,83 +424,114 @@ Future<void> _createNew() async {
                     suffixIcon: IconButton(
                       tooltip: 'Select date',
                       icon: const Icon(Icons.calendar_month),
-                      onPressed: _searchBusy ? null : _pickSearchDate,
+                      onPressed:
+                          _searchBusy ? null : _pickSearchDate,
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 ElevatedButton(
                   onPressed: _searchBusy ? null : _viewByDate,
                   child: const Text('View'),
                 ),
+
                 const SizedBox(height: 24),
+
+                // Recent entries.
                 Text(
                   'Recent entries',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
+
                 const SizedBox(height: 8),
+
                 if (dates.isEmpty)
-                  const Text('No journal entries yet. Tap + to start writing.')
+                  const Text(
+                    'No journal entries yet. Tap + to start writing.',
+                  )
                 else
-                  ...dates
-                      .take(10)
-                      .map(
-                        (date) => Card(
-                          child: ListTile(
-                            title: Text(
-                              date,
-                              style: TextStyle(
-                                fontFamily: _settings.font.family,
-                              ),
-                            ),
-                            subtitle: Text(
-                              _entries[date]!.trim().isEmpty
-                                  ? '(Empty entry)'
-                                  : _entries[date]!.replaceAll('\n', ' '),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: _settings.font.family,
-                              ),
-                            ),
-                            trailing: IconButton(
-                              tooltip: 'Delete entry for $date',
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.red,
-                              ),
-                              onPressed: () => _confirmDeleteEntry(date),
-                            ),
-                            onTap: () => _openEditor(date),
+                  ...dates.take(10).map(
+                    (date) => Card(
+                      child: ListTile(
+                        title: Text(
+                          date,
+                          style: TextStyle(
+                            fontFamily: _settings.font.family,
                           ),
                         ),
+
+                        subtitle: Text(
+                          _entries[date]!.trim().isEmpty
+                              ? '(Empty entry)'
+                              : _entries[date]!
+                                  .replaceAll('\n', ' '),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: _settings.font.family,
+                          ),
+                        ),
+
+                        // Delete icon.
+                        trailing: IconButton(
+                          tooltip: 'Delete entry for $date',
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                          onPressed: () =>
+                              _confirmDeleteEntry(date),
+                        ),
+
+                        onTap: () => _openEditor(date),
                       ),
+                    ),
+                  ),
+
                 const SizedBox(height: 24),
+
+                // Favorite journals placeholder.
                 Text(
                   'Favorite journals',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const Text('Favorites will be added in a future user story.'),
+
+                const Text(
+                  'Favorites will be added in a future user story.',
+                ),
               ],
             ),
+
+     
+      // BOTTOM-RIGHT BUTTONS
+    
+
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          // New Entry button.
           FloatingActionButton.extended(
             heroTag: 'journal_new_entry',
-            onPressed: _loading || _loadFailed ? null : _createNew,
+            onPressed:
+                _loading || _loadFailed ? null : _createNew,
             icon: const Icon(Icons.add),
             label: const Text('New Entry'),
           ),
+
           const SizedBox(height: 12),
+
+          // Statistics button.
           FloatingActionButton.small(
             heroTag: 'journal_statistics',
             tooltip: 'View stress statistics',
             onPressed: () {
               Navigator.of(context).push<void>(
                 MaterialPageRoute(
-                  builder: (_) => const StressStatisticsScreen(),
+                  builder: (_) =>
+                      const StressStatisticsScreen(),
                 ),
               );
             },
@@ -452,5 +541,4 @@ Future<void> _createNew() async {
       ),
     );
   }
-
 }
